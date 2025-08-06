@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brian Averna Cottage Cooking - Book Your Cooking Class</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <img src="80EEC885-72BE-48B4-8172-AD040AAE62E9.png" alt="Brian Averna Cottage Cooking" class="logo-img">
+                    <span class="logo-text">Brian Averna Cottage Cooking</span>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#classes">Classes</a></li>
+                    <li><a href="#calendar">Calendar</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="login.html">Admin</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <h1>Welcome to Cottage Cooking Classes</h1>
+                <p>Learn the art of home cooking in a warm, intimate setting. Join us for hands-on cooking experiences that celebrate fresh, seasonal ingredients and traditional techniques.</p>
+                <button class="cta-button" onclick="scrollToSection('calendar')">Book a Class</button>
+            </div>
+                          <div class="hero-image">
+                <img src="istockphoto-499805776-612x612.jpg" alt="Beautiful Cottage Kitchen" style="width: 280px; height: 210px; border-radius: 10px; object-fit: cover;" />
+              </div>
+        </section>
+
+        <!-- Classes Section -->
+        <section id="classes" class="classes-section">
+            <div class="container">
+                <h2>Our Cooking Classes</h2>
+                <div class="classes-grid">
+                    <div class="class-card">
+                        <div class="class-image">🍞</div>
+                        <h3>Artisan Bread Making</h3>
+                        <p>Learn to create rustic, handcrafted breads using traditional techniques and natural ingredients.</p>
+                        <div class="class-info">
+                            <span class="duration">3 hours</span>
+                            <span class="price">$85</span>
+                        </div>
+                    </div>
+                    <div class="class-card">
+                        <div class="class-image">🥗</div>
+                        <h3>Farm-to-Table Cooking</h3>
+                        <p>Discover how to create delicious meals using fresh, locally-sourced seasonal ingredients.</p>
+                        <div class="class-info">
+                            <span class="duration">2.5 hours</span>
+                            <span class="price">$75</span>
+                        </div>
+                    </div>
+                    <div class="class-card">
+                        <div class="class-image">🍰</div>
+                        <h3>Classic Desserts</h3>
+                        <p>Master the art of traditional dessert making, from pies to cakes to delicate pastries.</p>
+                        <div class="class-info">
+                            <span class="duration">3.5 hours</span>
+                            <span class="price">$95</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendar & Booking Section -->
+        <section id="calendar" class="calendar-section">
+            <div class="container">
+                <h2>Book Your Class</h2>
+                <div class="booking-container">
+                    <div class="calendar-widget">
+                        <h3>Available Classes</h3>
+                        <div class="calendar" id="calendar"></div>
+                    </div>
+                    <div class="booking-form">
+                        <h3>Reserve Your Seat</h3>
+                        <form id="bookingForm">
+                            <div class="form-group">
+                                <label for="className">Select Class:</label>
+                                <select id="className" required>
+                                    <option value="">Choose a class...</option>
+                                    <option value="bread">Artisan Bread Making - $85</option>
+                                    <option value="farm-to-table">Farm-to-Table Cooking - $75</option>
+                                    <option value="desserts">Classic Desserts - $95</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="classDate">Date:</label>
+                                <input type="date" id="classDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="seats">Number of Seats:</label>
+                                <select id="seats" required>
+                                    <option value="">Select...</option>
+                                    <option value="1">1 seat</option>
+                                    <option value="2">2 seats</option>
+                                    <option value="3">3 seats</option>
+                                    <option value="4">4 seats</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="name">Your Name:</label>
+                                <input type="text" id="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number:</label>
+                                <input type="tel" id="phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="dietary">Dietary Restrictions (optional):</label>
+                                <textarea id="dietary" rows="3" placeholder="Please let us know about any allergies or dietary preferences..."></textarea>
+                            </div>
+                            <button type="submit" class="submit-button">Reserve My Seat</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about-section">
+            <div class="container">
+                <h2>About Brian</h2>
+                <div class="about-content">
+                    <div class="about-text">
+                        <p>Welcome to my cottage kitchen! I'm passionate about sharing the joy of cooking with fresh, seasonal ingredients in a warm, welcoming environment.</p>
+                        <p>With years of experience in both professional kitchens and home cooking, I love teaching traditional techniques while encouraging creativity and personal expression in the kitchen.</p>
+                        <p>Each class is limited to small groups to ensure personal attention and a cozy, intimate learning experience.</p>
+                    </div>
+                    <div class="about-image">
+                        <img src="IMG_8716 (1).jpeg" alt="Chef Brian Averna" style="width: 280px; height: 350px; border-radius: 10px; object-fit: cover; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact-section">
+            <div class="container">
+                <h2>Get in Touch</h2>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <h3>Location</h3>
+                        <p>Cottage Kitchen Studio<br>
+                        [Your Address]<br>
+                        [City, State ZIP]</p>
+                    </div>
+                    <div class="contact-item">
+                        <h3>Contact</h3>
+                        <p>Email: hello@brianavernacottagecooking.com<br>
+                        Phone: (555) 123-4567</p>
+                    </div>
+                    <div class="contact-item">
+                        <h3>Hours</h3>
+                        <p>Classes by appointment<br>
+                        Tuesday - Saturday<br>
+                        10am - 8pm</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Brian Averna Cottage Cooking. All rights reserved.</p>
+            <p>Website: brianavernacottagecooking.com</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

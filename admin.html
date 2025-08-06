@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Brian Averna Cottage Cooking</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <img src="80EEC885-72BE-48B4-8172-AD040AAE62E9.png" alt="Brian Averna Cottage Cooking" class="logo-img">
+                    <span class="logo-text">Admin Panel</span>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="index.html">Back to Website</a></li>
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#classes">Manage Classes</a></li>
+                    <li><a href="#bookings">Bookings</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main style="padding-top: 100px;">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="admin-section">
+            <div class="container">
+                <h2>Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Bookings</h3>
+                        <div class="stat-number">24</div>
+                        <p>This month</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Upcoming Classes</h3>
+                        <div class="stat-number">8</div>
+                        <p>Next 30 days</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Available Seats</h3>
+                        <div class="stat-number">32</div>
+                        <p>This month</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Revenue</h3>
+                        <div class="stat-number">$2,040</div>
+                        <p>This month</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Class Management Section -->
+        <section id="classes" class="admin-section">
+            <div class="container">
+                <h2>Manage Classes</h2>
+                
+                <!-- Add New Class Form -->
+                <div class="admin-card">
+                    <h3>Add New Class Session</h3>
+                    <form id="addClassForm" class="admin-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="classType">Class Type:</label>
+                                <select id="classType" required>
+                                    <option value="">Select class type...</option>
+                                    <option value="bread">Artisan Bread Making</option>
+                                    <option value="farm-to-table">Farm-to-Table Cooking</option>
+                                    <option value="desserts">Classic Desserts</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="classDate">Date:</label>
+                                <input type="date" id="classDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="classTime">Time:</label>
+                                <input type="time" id="classTime" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="maxSeats">Maximum Seats:</label>
+                                <input type="number" id="maxSeats" min="1" max="12" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="price">Price:</label>
+                                <input type="number" id="price" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes">Special Notes (optional):</label>
+                            <textarea id="notes" rows="3" placeholder="Any special instructions or notes for this class..."></textarea>
+                        </div>
+                        <button type="submit" class="admin-button">Add Class Session</button>
+                    </form>
+                </div>
+
+                <!-- Current Month Schedule -->
+                <div class="admin-card">
+                    <h3>Current Month Schedule</h3>
+                    <div class="schedule-controls">
+                        <button class="admin-button secondary" onclick="changeMonth(-1)">← Previous Month</button>
+                        <span id="currentMonth">February 2024</span>
+                        <button class="admin-button secondary" onclick="changeMonth(1)">Next Month →</button>
+                    </div>
+                    <div class="schedule-grid" id="scheduleGrid">
+                        <!-- Schedule will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bookings Management Section -->
+        <section id="bookings" class="admin-section">
+            <div class="container">
+                <h2>Recent Bookings</h2>
+                <div class="admin-card">
+                    <div class="bookings-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Class</th>
+                                    <th>Seats</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingsTableBody">
+                                <!-- Sample bookings - would come from database -->
+                                <tr>
+                                    <td>Feb 15, 2024</td>
+                                    <td>Sarah Johnson</td>
+                                    <td>Artisan Bread Making</td>
+                                    <td>2</td>
+                                    <td>sarah@email.com<br>(555) 123-4567</td>
+                                    <td><span class="status confirmed">Confirmed</span></td>
+                                    <td>
+                                        <button class="action-btn">Edit</button>
+                                        <button class="action-btn cancel">Cancel</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Feb 18, 2024</td>
+                                    <td>Mike Chen</td>
+                                    <td>Farm-to-Table Cooking</td>
+                                    <td>1</td>
+                                    <td>mike@email.com<br>(555) 987-6543</td>
+                                    <td><span class="status pending">Pending</span></td>
+                                    <td>
+                                        <button class="action-btn">Confirm</button>
+                                        <button class="action-btn cancel">Cancel</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Feb 22, 2024</td>
+                                    <td>Emma Davis</td>
+                                    <td>Classic Desserts</td>
+                                    <td>3</td>
+                                    <td>emma@email.com<br>(555) 456-7890</td>
+                                    <td><span class="status confirmed">Confirmed</span></td>
+                                    <td>
+                                        <button class="action-btn">Edit</button>
+                                        <button class="action-btn cancel">Cancel</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit/Delete Modal -->
+    <div id="classModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 id="modalTitle">Manage Day</h3>
+            <div id="modalButtons" class="modal-buttons">
+                <!-- Buttons will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Brian Averna Cottage Cooking - Admin Panel</p>
+        </div>
+    </footer>
+
+    <script>
+        // Check authentication before loading admin panel
+        function checkAuth() {
+            const isLoggedIn = sessionStorage.getItem('adminLoggedIn');
+            const loginTime = sessionStorage.getItem('loginTime');
+            const currentTime = Date.now();
+            const sessionDuration = 4 * 60 * 60 * 1000; // 4 hours
+            
+            if (!isLoggedIn || !loginTime || (currentTime - loginTime) > sessionDuration) {
+                // Clear session and redirect to login
+                sessionStorage.removeItem('adminLoggedIn');
+                sessionStorage.removeItem('loginTime');
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+        
+        // Check auth on page load
+        if (!checkAuth()) {
+            // Will redirect, so stop execution
+        } else {
+            // Load admin functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                // Add logout functionality
+                const logoutBtn = document.createElement('button');
+                logoutBtn.textContent = 'Logout';
+                logoutBtn.className = 'admin-button secondary';
+                logoutBtn.style.marginLeft = 'auto';
+                logoutBtn.onclick = function() {
+                    sessionStorage.removeItem('adminLoggedIn');
+                    sessionStorage.removeItem('loginTime');
+                    window.location.href = 'login.html';
+                };
+                
+                // Add logout button to navbar
+                const navMenu = document.querySelector('.nav-menu');
+                const logoutLi = document.createElement('li');
+                logoutLi.appendChild(logoutBtn);
+                navMenu.appendChild(logoutLi);
+            });
+        }
+    </script>
+    <script src="admin.js"></script>
+</body>
+</html>

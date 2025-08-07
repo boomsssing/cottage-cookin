@@ -5,7 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brian Averna Cottage Cooking - Book Your Cooking Class</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin-styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Admin navigation styles */
+        .admin-nav-section {
+            background: #2c5530;
+            color: white;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+
+        .admin-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .admin-nav h2 {
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .admin-nav-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-nav-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .admin-nav-btn:hover, .admin-nav-btn.active {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        @media (max-width: 768px) {
+            .admin-nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .admin-nav-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -18,10 +73,11 @@
                 <ul class="nav-menu">
                     <li><a href="#home">Home</a></li>
                     <li><a href="#classes">Classes</a></li>
+                    <li><a href="#gallery">Gallery</a></li>
                     <li><a href="#calendar">Calendar</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#contact">Contact</a></li>
-                    <li><a href="login.html">Admin</a></li>
+                    <li><a href="#admin">Admin</a></li>
                 </ul>
                 <div class="hamburger">
                     <span></span>
@@ -41,7 +97,7 @@
                 <button class="cta-button" onclick="scrollToSection('calendar')">Book a Class</button>
             </div>
                           <div class="hero-image">
-                <img src="istockphoto-499805776-612x612.jpg" alt="Beautiful Cottage Kitchen" style="width: 280px; height: 210px; border-radius: 10px; object-fit: cover;" />
+                <img src="istockphoto-499805776-612x612.jpg" alt="Beautiful Cottage Kitchen" class="hero-kitchen-image" />
               </div>
         </section>
 
@@ -75,6 +131,75 @@
                         <div class="class-info">
                             <span class="duration">3.5 hours</span>
                             <span class="price">$95</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Video Gallery Section -->
+        <section id="gallery" class="gallery-section">
+            <div class="container">
+                <h2>Chef Brian's Culinary Achievements</h2>
+                <p class="gallery-intro">Explore some of Chef Brian's remarkable culinary creations and achievements throughout his distinguished career.</p>
+                
+                <div class="video-gallery">
+                    <div class="featured-video">
+                        <div class="video-container">
+                            <video id="mainVideo" controls poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQ1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMmM1NTMwIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI0MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNsaWNrIHRvIFBsYXkgVmlkZW88L3RleHQ+CiAgPHRleHQgeD0iNTAlIiB5PSI2MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2E4Yzg5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TGFzIFZlZ2FzIEJpcnRoZGF5IENha2U8L3RleHQ+Cjwvc3ZnPgo=">
+                                <source src="las vegas cake.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <div class="video-overlay">
+                                <div class="play-button" onclick="playMainVideo()">
+                                    <span>▶</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3>World's Largest Birthday Cake - Las Vegas Centennial</h3>
+                            <p>Chef Brian Averna was the architect of the World's Largest Birthday Cake weighing 132,000 pounds, celebrating Las Vegas' 100th birthday in 2005. This extraordinary culinary achievement showcased his expertise in large-scale food production and innovation.</p>
+                            <div class="video-meta">
+                                <span class="video-tag">Culinary Achievement</span>
+                                <span class="video-tag">World Record</span>
+                                <span class="video-tag">Las Vegas 2005</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="video-controls">
+                        <button class="control-btn" onclick="toggleFullscreen()">🔳 Fullscreen</button>
+                        <button class="control-btn" onclick="shareVideo()">📤 Share</button>
+                    </div>
+                    
+                    <div class="gallery-grid">
+                        <div class="gallery-item">
+                            <div class="gallery-placeholder">
+                                <span>📺</span>
+                                <p>TV Appearances</p>
+                                <small>The Today Show, Rachael Ray, Paula Deen & More</small>
+                            </div>
+                        </div>
+                        <div class="gallery-item">
+                            <div class="gallery-placeholder">
+                                <span>🏢</span>
+                                <p>Corporate Work</p>
+                                <small>Sara Lee Senior Executive Chef</small>
+                            </div>
+                        </div>
+                        <div class="gallery-item">
+                            <div class="gallery-placeholder">
+                                <span>🍽️</span>
+                                <p>Food Innovations</p>
+                                <small>Served at Major Food Chains</small>
+                            </div>
+                        </div>
+                        <div class="gallery-item">
+                            <div class="gallery-placeholder">
+                                <span>🎓</span>
+                                <p>Culinary Education</p>
+                                <small>Culinary Institute of America Graduate</small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -142,15 +267,33 @@
         <!-- About Section -->
         <section id="about" class="about-section">
             <div class="container">
-                <h2>About Brian</h2>
+                <h2>About Chef Brian Averna</h2>
                 <div class="about-content">
                     <div class="about-text">
-                        <p>Welcome to my cottage kitchen! I'm passionate about sharing the joy of cooking with fresh, seasonal ingredients in a warm, welcoming environment.</p>
-                        <p>With years of experience in both professional kitchens and home cooking, I love teaching traditional techniques while encouraging creativity and personal expression in the kitchen.</p>
-                        <p>Each class is limited to small groups to ensure personal attention and a cozy, intimate learning experience.</p>
+                        <p><strong>Brian Averna is a nationally renowned culinarian and food innovation expert</strong> having worked in many segments of the food industry ranging from culinary, sales, R&D, marketing and media.</p>
+                        
+                        <p>As <strong>Sara Lee's Senior Executive Chef</strong>, Brian appeared on several national media outlets which included The Tony Danza Show, Rachael Ray, Paula Dean's Paula's Party, ESPN, MSNBC, NPR, ABC, CBS, Marketplace, and Fox and Friends. He's appeared on <strong>The Today Show several times</strong> over the years.</p>
+                        
+                        <p>In 2005, Brian was <strong>the architect of the World's Largest Birthday Cake weighing in at 132,000 pounds</strong> celebrating Las Vegas' 100th birthday - a remarkable achievement showcasing his expertise in large-scale culinary production.</p>
+                        
+                        <p>Brian has constructed dozens of food innovations which have been served at some of America's largest food chains, C-Stores and CPG outlets. These include <strong>Sam's Club, 7-11, IHOP, Kwik Trip, Burger King, Waffle House, Mohegan Sun, Dunkin', Panera, Costco, Sonic, Firehouse Subs, Subway, Quizno's, Palermo's Pizza, Wienerschnitzel, Pret A Manger</strong> and more.</p>
+                        
+                        <p>His education at <strong>The Culinary Institute of America</strong> along with his extensive food travels have provided him with the tools to be inventive while keeping his finger on the pulse of America's palates.</p>
+                        
+                        <p>After retiring from full time work, Brian has been teaching eager foodies at a few local Connecticut cooking institutions. Today, Brian has opened his own cooking studio; <strong>Cottage Cooking in New Haven CT</strong>, where he shares his love of savory and baked goods with his students of all ages.</p>
                     </div>
                     <div class="about-image">
-                        <img src="IMG_8716 (1).jpeg" alt="Chef Brian Averna" style="width: 280px; height: 350px; border-radius: 10px; object-fit: cover; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);" />
+                        <img src="IMG_8716 (1).jpeg" alt="Chef Brian Averna" class="chef-image" />
+                        <div class="credentials">
+                            <h4>Professional Highlights</h4>
+                            <ul>
+                                <li>🏢 Former Senior Executive Chef at Sara Lee</li>
+                                <li>📺 Multiple TV appearances including Today Show</li>
+                                <li>🎂 World's Largest Birthday Cake architect (132,000 lbs)</li>
+                                <li>🎓 Culinary Institute of America graduate</li>
+                                <li>🍽️ Innovations served at major food chains nationwide</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,12 +307,11 @@
                     <div class="contact-item">
                         <h3>Location</h3>
                         <p>Cottage Kitchen Studio<br>
-                        [Your Address]<br>
-                        [City, State ZIP]</p>
+                        New Haven, CT</p>
                     </div>
                     <div class="contact-item">
                         <h3>Contact</h3>
-                        <p>Email: hello@brianavernacottagecooking.com<br>
+                        <p>Email: brianwaverna@gmail.com<br>
                         Phone: (555) 123-4567</p>
                     </div>
                     <div class="contact-item">
@@ -181,12 +323,145 @@
                 </div>
             </div>
         </section>
+
+        <!-- Admin Panel Section -->
+        <section id="admin" class="admin-section">
+            <div class="container">
+                <div class="admin-nav-section">
+                    <div class="admin-nav">
+                        <h2>Admin Panel</h2>
+                        <div class="admin-nav-buttons">
+                            <button onclick="showAdminSection('dashboard')" class="admin-nav-btn active" id="dashboardBtn">Dashboard</button>
+                            <button onclick="showAdminSection('manage-classes')" class="admin-nav-btn" id="manageClassesBtn">Manage Classes</button>
+                            <button onclick="showAdminSection('bookings')" class="admin-nav-btn" id="bookingsBtn">Bookings</button>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Dashboard Section -->
+            <section id="admin-dashboard-section" class="admin-section">
+                <div class="container">
+                    <h2>Dashboard</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total Bookings</h3>
+                            <div class="stat-number" id="totalBookings">0</div>
+                            <p>This month</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Upcoming Classes</h3>
+                            <div class="stat-number" id="upcomingClasses">0</div>
+                            <p>Next 30 days</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Available Seats</h3>
+                            <div class="stat-number" id="availableSeats">0</div>
+                            <p>This month</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Revenue</h3>
+                            <div class="stat-number" id="monthlyRevenue">$0</div>
+                            <p>This month</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Manage Classes Section -->
+            <section id="admin-manage-classes-section" class="admin-section" style="display: none;">
+                <div class="container">
+                    <h2>Manage Classes</h2>
+                    
+                    <!-- Add New Class Form -->
+                    <div class="admin-card">
+                        <h3>Add New Class Session</h3>
+                        <form id="addClassForm" class="admin-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="classType">Class Type:</label>
+                                    <select id="classType" required>
+                                        <option value="">Select class type...</option>
+                                        <option value="bread">Artisan Bread Making</option>
+                                        <option value="farm-to-table">Farm-to-Table Cooking</option>
+                                        <option value="desserts">Classic Desserts</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="classDate">Date:</label>
+                                    <input type="date" id="classDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="classTime">Time:</label>
+                                    <input type="time" id="classTime" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="maxSeats">Maximum Seats:</label>
+                                    <input type="number" id="maxSeats" min="1" max="12" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="price">Price:</label>
+                                    <input type="number" id="price" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="notes">Special Notes (optional):</label>
+                                <textarea id="notes" rows="3" placeholder="Any special instructions or notes for this class..."></textarea>
+                            </div>
+                            <button type="submit" class="admin-button">Add Class Session</button>
+                        </form>
+                    </div>
+
+                    <!-- Current Month Schedule -->
+                    <div class="admin-card">
+                        <h3>Current Month Schedule</h3>
+                        <div class="schedule-controls">
+                            <button class="admin-button secondary" onclick="changeAdminMonth(-1)">← Previous Month</button>
+                            <span id="currentAdminMonth">Loading...</span>
+                            <button class="admin-button secondary" onclick="changeAdminMonth(1)">Next Month →</button>
+                        </div>
+                        <div class="schedule-grid" id="adminScheduleGrid">
+                            <!-- Schedule will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bookings Management Section -->
+            <section id="admin-bookings-section" class="admin-section" style="display: none;">
+                <div class="container">
+                    <h2>Recent Bookings</h2>
+                    <div class="admin-card">
+                        <div class="bookings-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Customer</th>
+                                        <th>Class</th>
+                                        <th>Seats</th>
+                                        <th>Contact</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminBookingsTableBody">
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; color: #666;">Loading bookings...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
     </main>
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 Brian Averna Cottage Cooking. All rights reserved.</p>
-            <p>Website: brianavernacottagecooking.com</p>
+            <p>&copy; 2025 Brian Averna Cottage Cooking. All rights reserved.</p>
         </div>
     </footer>
 

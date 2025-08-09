@@ -1,3 +1,586 @@
+// Authentication System
+class AuthSystem {
+    constructor() {
+        this.init();
+    }
+
+    init() {
+        this.checkAuthState();
+        this.setupAuthEventListeners();
+    }
+
+    checkAuthState() {
+        const isLoggedIn = localStorage.getItem('userLoggedIn');
+        const authLink = document.getElementById('authLink');
+        
+        if (isLoggedIn) {
+            const userData = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            this.updateNavForLoggedInUser(userData);
+        } else {
+            authLink.textContent = 'Sign In';
+            authLink.onclick = () => this.openSignInModal();
+        }
+    }
+
+    updateNavForLoggedInUser(userData) {
+        const authLink = document.getElementById('authLink');
+        const navMenu = authLink.parentElement.parentElement;
+        
+        // Replace sign in link with user dropdown menu
+        authLink.parentElement.innerHTML = `
+            <li class="user-menu-container">
+                <div class="user-menu-trigger" onclick="toggleUserMenu()">
+                    <div class="user-avatar">${userData.firstName ? userData.firstName.charAt(0).toUpperCase() : 'U'}</div>
+                    <span class="user-name">${userData.firstName || 'User'}</span>
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="user-info-header">
+                        <div class="user-avatar-large">${userData.firstName ? userData.firstName.charAt(0).toUpperCase() : 'U'}</div>
+                        <div class="user-details">
+                            <div class="user-full-name">${userData.firstName || ''} ${userData.lastName || ''}</div>
+                            <div class="user-email">${userData.email || ''}</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="navigateToDashboard()" class="dropdown-item">
+                        <span class="dropdown-icon">📊</span>
+                        My Dashboard
+                    </a>
+                    <a href="#" onclick="navigateToBookings()" class="dropdown-item">
+                        <span class="dropdown-icon">📅</span>
+                        My Bookings
+                    </a>
+                    <a href="#" onclick="navigateToProfile()" class="dropdown-item">
+                        <span class="dropdown-icon">👤</span>
+                        My Profile
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="logout()" class="dropdown-item logout-item">
+                        <span class="dropdown-icon">🚪</span>
+                        Logout
+                    </a>
+                </div>
+            </li>
+        `;
+    }
+
+    setupAuthEventListeners() {
+        // Sign In Form
+        const signInForm = document.getElementById('signInForm');
+        if (signInForm) {
+            signInForm.addEventListener('submit', (e) => this.handleSignIn(e));
+        }
+
+        // Sign Up Form
+        const signUpForm = document.getElementById('signUpForm');
+        if (signUpForm) {
+            signUpForm.addEventListener('submit', (e) => this.handleSignUp(e));
+        }
+
+        // Forgot Password Form
+        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+        if (forgotPasswordForm) {
+            forgotPasswordForm.addEventListener('submit', (e) => this.handleForgotPassword(e));
+        }
+
+        // Reset Password Form
+        const resetPasswordForm = document.getElementById('resetPasswordForm');
+        if (resetPasswordForm) {
+            resetPasswordForm.addEventListener('submit', (e) => this.handleResetPassword(e));
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('auth-modal')) {
+                this.closeAuthModal();
+            }
+        });
+    }
+
+    openSignInModal() {
+        document.getElementById('signInModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    openSignUpModal() {
+        document.getElementById('signUpModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    openForgotPasswordModal() {
+        document.getElementById('forgotPasswordModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        // Reset to step 1
+        this.resetForgotPasswordSteps();
+    }
+
+    closeAuthModal() {
+        document.getElementById('signInModal').style.display = 'none';
+        document.getElementById('signUpModal').style.display = 'none';
+        document.getElementById('forgotPasswordModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        this.clearAuthForms();
+        this.resetForgotPasswordSteps();
+    }
+
+    resetForgotPasswordSteps() {
+        document.getElementById('forgotPasswordStep1').style.display = 'block';
+        document.getElementById('forgotPasswordStep2').style.display = 'none';
+        document.getElementById('forgotPasswordStep3').style.display = 'none';
+        document.getElementById('forgotPasswordForm').reset();
+        document.getElementById('resetPasswordForm').reset();
+    }
+
+    clearAuthForms() {
+        document.getElementById('signInForm').reset();
+        document.getElementById('signUpForm').reset();
+    }
+
+    async handleSignIn(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('signInEmail').value;
+        const password = document.getElementById('signInPassword').value;
+
+        // Get users from localStorage
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const user = users.find(u => u.email === email && u.password === password);
+
+        if (user) {
+            // Successful login
+            localStorage.setItem('userLoggedIn', 'true');
+            localStorage.setItem('userLoginTime', Date.now().toString());
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            this.showMessage('Welcome back! Redirecting to your dashboard...', 'success');
+            
+            setTimeout(() => {
+                window.location.href = 'user-dashboard.html';
+            }, 1500);
+        } else {
+            this.showMessage('Invalid email or password. Please try again.', 'error');
+        }
+    }
+
+    async handleSignUp(e) {
+        e.preventDefault();
+        
+        const formData = {
+            firstName: document.getElementById('signUpFirstName').value,
+            lastName: document.getElementById('signUpLastName').value,
+            email: document.getElementById('signUpEmail').value,
+            phone: document.getElementById('signUpPhone').value,
+            password: document.getElementById('signUpPassword').value,
+            confirmPassword: document.getElementById('signUpConfirmPassword').value,
+            dietary: document.getElementById('signUpDietary').value,
+            createdAt: new Date().toISOString(),
+            experience: 'beginner'
+        };
+
+        // Validate passwords match
+        if (formData.password !== formData.confirmPassword) {
+            this.showMessage('Passwords do not match.', 'error');
+            return;
+        }
+
+        // Check if user already exists
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        if (users.find(u => u.email === formData.email)) {
+            this.showMessage('An account with this email already exists.', 'error');
+            return;
+        }
+
+        // Add new user
+        const newUser = { ...formData };
+        delete newUser.confirmPassword; // Don't store confirm password
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+
+        // Auto sign in the new user
+        localStorage.setItem('userLoggedIn', 'true');
+        localStorage.setItem('userLoginTime', Date.now().toString());
+        localStorage.setItem('currentUser', JSON.stringify(newUser));
+
+        // Send admin notification about new member
+        addAdminNotification({
+            type: 'new_member',
+            user: newUser,
+            message: `New member: ${newUser.firstName} ${newUser.lastName} just signed up!`,
+            timestamp: Date.now(),
+            read: false
+        });
+
+        this.showMessage('Account created successfully! Redirecting to your dashboard...', 'success');
+        
+        setTimeout(() => {
+            window.location.href = 'user-dashboard.html';
+        }, 1500);
+    }
+
+    async handleForgotPassword(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('forgotEmail').value;
+        
+        // Find user by email
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const user = users.find(u => u.email === email);
+
+        if (user) {
+            // Show user info and move to step 2
+            this.showUserPreview(user);
+            document.getElementById('forgotPasswordStep1').style.display = 'none';
+            document.getElementById('forgotPasswordStep2').style.display = 'block';
+            
+            // Store user for password reset
+            this.resetUser = user;
+        } else {
+            this.showMessage('No account found with that email address. Please check and try again.', 'error');
+        }
+    }
+
+    showUserPreview(user) {
+        // Display user information
+        const avatar = document.getElementById('previewAvatar');
+        const name = document.getElementById('previewName');
+        const email = document.getElementById('previewEmail');
+        const date = document.getElementById('previewDate');
+        const phone = document.getElementById('previewPhone');
+
+        avatar.textContent = user.firstName ? user.firstName.charAt(0).toUpperCase() : '👤';
+        name.textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User';
+        email.textContent = user.email;
+        
+        const createdDate = new Date(user.createdAt || Date.now());
+        date.textContent = createdDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long' 
+        });
+        
+        phone.textContent = user.phone || 'Not provided';
+    }
+
+    async handleResetPassword(e) {
+        e.preventDefault();
+        
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmNewPassword').value;
+
+        // Validate passwords match
+        if (newPassword !== confirmPassword) {
+            this.showMessage('Passwords do not match. Please try again.', 'error');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            this.showMessage('Password must be at least 6 characters long.', 'error');
+            return;
+        }
+
+        // Update user password
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const userIndex = users.findIndex(u => u.email === this.resetUser.email);
+        
+        if (userIndex !== -1) {
+            users[userIndex].password = newPassword;
+            users[userIndex].passwordLastUpdated = new Date().toISOString();
+            localStorage.setItem('users', JSON.stringify(users));
+
+            // Move to success step
+            document.getElementById('forgotPasswordStep2').style.display = 'none';
+            document.getElementById('forgotPasswordStep3').style.display = 'block';
+
+            // Add admin notification
+            addAdminNotification({
+                type: 'security',
+                message: `${this.resetUser.firstName || 'User'} ${this.resetUser.lastName || ''} reset their password`,
+                timestamp: Date.now(),
+                read: false
+            });
+
+        } else {
+            this.showMessage('An error occurred. Please try again.', 'error');
+        }
+    }
+
+    showMessage(text, type = 'info') {
+        const message = document.createElement('div');
+        message.className = `auth-message ${type}`;
+        message.textContent = text;
+        message.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: ${type === 'success' ? '#e8f2e8' : type === 'error' ? '#f8d7da' : '#d1ecf1'};
+            color: ${type === 'success' ? '#2c5530' : type === 'error' ? '#721c24' : '#0c5460'};
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid ${type === 'success' ? '#7a9a4d' : type === 'error' ? '#dc3545' : '#17a2b8'};
+            z-index: 1001;
+            font-weight: 600;
+            animation: slideInRight 0.3s ease;
+            max-width: 300px;
+        `;
+        
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            message.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => {
+                if (document.body.contains(message)) {
+                    document.body.removeChild(message);
+                }
+            }, 300);
+        }, 4000);
+    }
+}
+
+// User menu functions
+function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+        const isVisible = dropdown.style.display === 'block';
+        dropdown.style.display = isVisible ? 'none' : 'block';
+        
+        // Close dropdown when clicking outside
+        if (!isVisible) {
+            setTimeout(() => {
+                document.addEventListener('click', closeUserMenuOnOutsideClick);
+            }, 100);
+        }
+    }
+}
+
+function closeUserMenuOnOutsideClick(e) {
+    const dropdown = document.getElementById('userDropdown');
+    const trigger = document.querySelector('.user-menu-trigger');
+    
+    if (dropdown && trigger && !trigger.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+        document.removeEventListener('click', closeUserMenuOnOutsideClick);
+    }
+}
+
+function navigateToDashboard() {
+    // Validate user session before navigation
+    const isLoggedIn = localStorage.getItem('userLoggedIn');
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    if (!isLoggedIn || !currentUser.email) {
+        showUserMessage('❌ Session expired. Please log in again.', 'error');
+        logout();
+        return;
+    }
+    
+    // Close the dropdown first
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+    
+    // Show navigation message
+    showUserMessage('🏠 Navigating to your dashboard...', 'info');
+    
+    // Navigate to dashboard
+    setTimeout(() => {
+        window.location.href = 'user-dashboard.html';
+    }, 500);
+}
+
+function navigateToBookings() {
+    // Validate user session before navigation
+    const isLoggedIn = localStorage.getItem('userLoggedIn');
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    if (!isLoggedIn || !currentUser.email) {
+        showUserMessage('❌ Session expired. Please log in again.', 'error');
+        logout();
+        return;
+    }
+    
+    // Close the dropdown first
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+    
+    // Show navigation message
+    showUserMessage('📅 Going to your bookings...', 'info');
+    
+    // Navigate to bookings section
+    setTimeout(() => {
+        window.location.href = 'user-dashboard.html#my-bookings';
+    }, 500);
+}
+
+function navigateToProfile() {
+    // Validate user session before navigation
+    const isLoggedIn = localStorage.getItem('userLoggedIn');
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    if (!isLoggedIn || !currentUser.email) {
+        showUserMessage('❌ Session expired. Please log in again.', 'error');
+        logout();
+        return;
+    }
+    
+    // Close the dropdown first
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+    
+    // Show navigation message
+    showUserMessage('👤 Opening your profile...', 'info');
+    
+    // Navigate to profile section
+    setTimeout(() => {
+        window.location.href = 'user-dashboard.html#profile';
+    }, 500);
+}
+
+function showUserMessage(text, type = 'info') {
+    // Remove existing messages
+    const existingMessages = document.querySelectorAll('.user-nav-message');
+    existingMessages.forEach(msg => msg.remove());
+    
+    const message = document.createElement('div');
+    message.className = `user-nav-message ${type}`;
+    message.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 1002;
+        font-size: 0.9rem;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        animation: slideInRight 0.3s ease;
+    `;
+    message.textContent = text;
+    
+    document.body.appendChild(message);
+    
+    // Auto-remove after 2 seconds
+    setTimeout(() => {
+        if (document.body.contains(message)) {
+            message.style.animation = 'slideInRight 0.3s ease reverse';
+            setTimeout(() => message.remove(), 300);
+        }
+    }, 2000);
+}
+
+function logout() {
+    // Get current user for logout message
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userName = currentUser.firstName || 'User';
+    
+    if (confirm('Are you sure you want to logout?')) {
+        // Close the dropdown first
+        const dropdown = document.getElementById('userDropdown');
+        if (dropdown) {
+            dropdown.style.display = 'none';
+        }
+        
+        // Clear all user session data consistently
+        localStorage.removeItem('userLoggedIn');
+        localStorage.removeItem('userLoginTime');
+        localStorage.removeItem('currentUser');
+        
+        // Add logout notification for admin
+        const logoutNotification = {
+            type: 'logout',
+            message: `${userName} logged out`,
+            timestamp: Date.now(),
+            read: false
+        };
+        
+        try {
+            const notifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+            notifications.unshift(logoutNotification);
+            if (notifications.length > 50) {
+                notifications.splice(50);
+            }
+            localStorage.setItem('adminNotifications', JSON.stringify(notifications));
+        } catch (error) {
+            console.log('Could not save logout notification');
+        }
+        
+        // Show logout message
+        showUserMessage(`👋 Goodbye ${userName}! See you soon!`, 'success');
+        
+        // Redirect to main page and refresh to update nav
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1500);
+    }
+}
+
+// Global auth functions for modal controls
+function switchToSignUp() {
+    document.getElementById('signInModal').style.display = 'none';
+    document.getElementById('signUpModal').style.display = 'block';
+}
+
+function switchToSignIn() {
+    document.getElementById('signUpModal').style.display = 'none';
+    document.getElementById('signInModal').style.display = 'block';
+}
+
+function closeAuthModal() {
+    if (window.authSystem) {
+        window.authSystem.closeAuthModal();
+    }
+}
+
+function showForgotPassword() {
+    if (window.authSystem) {
+        window.authSystem.closeAuthModal();
+        setTimeout(() => {
+            window.authSystem.openForgotPasswordModal();
+        }, 100);
+    }
+}
+
+function goBackToEmailStep() {
+    document.getElementById('forgotPasswordStep2').style.display = 'none';
+    document.getElementById('forgotPasswordStep1').style.display = 'block';
+    document.getElementById('forgotEmail').focus();
+}
+
+function switchToSignInAfterReset() {
+    if (window.authSystem) {
+        window.authSystem.closeAuthModal();
+        setTimeout(() => {
+            window.authSystem.openSignInModal();
+            // Pre-fill email if available
+            if (window.authSystem.resetUser) {
+                document.getElementById('signInEmail').value = window.authSystem.resetUser.email;
+                document.getElementById('signInPassword').focus();
+            }
+        }, 100);
+    }
+}
+
+// Helper functions for user integration
+function generateTempPassword() {
+    return Math.random().toString(36).slice(-8);
+}
+
+function addAdminNotification(notification) {
+    const notifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+    notifications.unshift(notification); // Add to beginning
+    // Keep only last 50 notifications
+    if (notifications.length > 50) {
+        notifications.splice(50);
+    }
+    localStorage.setItem('adminNotifications', JSON.stringify(notifications));
+}
+
 // Smooth scrolling for navigation links
 function scrollToSection(sectionId) {
     document.getElementById(sectionId).scrollIntoView({
@@ -32,6 +615,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     `;
     document.head.appendChild(style);
+    
+    // Initialize Auth System
+    window.authSystem = new AuthSystem();
     
     // Form submission handler
     const bookingForm = document.getElementById('bookingForm');
@@ -390,10 +976,55 @@ function handleBookingSubmission() {
         saveClassesToStorage(classes);
         triggerCalendarUpdate();
         
-        // Show enhanced success message
-        const successMessage = `✅ BOOKING CONFIRMED!\n\nThank you, ${formData.name}!\n${formData.seats} seat(s) booked for ${getFullClassName(formData.className)}\nDate: ${new Date(formData.classDate).toLocaleDateString()}\n\nConfirmation will be sent to: ${formData.email}\n\n⚡ Calendar updated in real-time!`;
+        // Enhanced booking confirmation with user integration
+        const isLoggedIn = localStorage.getItem('userLoggedIn');
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         
-        alert(successMessage);
+        // Add admin notification for real-time updates
+        addAdminNotification({
+            type: 'booking',
+            booking: newBooking,
+            message: `New booking from ${formData.name} for ${getFullClassName(formData.className)}`,
+            timestamp: Date.now(),
+            read: false
+        });
+
+        // Create user account if not logged in and doesn't exist
+        if (!isLoggedIn && formData.email) {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (!users.find(u => u.email === formData.email)) {
+                const tempPassword = generateTempPassword();
+                const newUser = {
+                    firstName: formData.name.split(' ')[0],
+                    lastName: formData.name.split(' ').slice(1).join(' ') || '',
+                    email: formData.email,
+                    phone: formData.phone,
+                    dietary: formData.dietary,
+                    password: tempPassword,
+                    createdAt: new Date().toISOString(),
+                    experience: 'beginner',
+                    accountType: 'auto-created'
+                };
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                const successMessage = `✅ BOOKING CONFIRMED!\n\nThank you, ${formData.name}!\n${formData.seats} seat(s) booked for ${getFullClassName(formData.className)}\nDate: ${new Date(formData.classDate).toLocaleDateString()}\n\nWe've also created an account for you!\nEmail: ${formData.email}\nTemp Password: ${tempPassword}\n\n⚡ Calendar updated in real-time!`;
+                alert(successMessage);
+            } else {
+                const successMessage = `✅ BOOKING CONFIRMED!\n\nThank you, ${formData.name}!\n${formData.seats} seat(s) booked for ${getFullClassName(formData.className)}\nDate: ${new Date(formData.classDate).toLocaleDateString()}\n\nConfirmation sent to: ${formData.email}\n\n⚡ Calendar updated in real-time!`;
+                alert(successMessage);
+            }
+        } else {
+            const successMessage = `✅ BOOKING CONFIRMED!\n\nThank you, ${formData.name}!\n${formData.seats} seat(s) booked for ${getFullClassName(formData.className)}\nDate: ${new Date(formData.classDate).toLocaleDateString()}\n\nView in your dashboard!\n\n⚡ Calendar updated in real-time!`;
+            alert(successMessage);
+            
+            // Offer to go to dashboard
+            setTimeout(() => {
+                if (confirm('Would you like to view your booking in your dashboard?')) {
+                    window.location.href = 'user-dashboard.html';
+                }
+            }, 1000);
+        }
         
         // Reset form
         document.getElementById('bookingForm').reset();
@@ -875,6 +1506,13 @@ window.showAdminSection = showAdminSection;
 window.changeAdminMonth = changeAdminMonth;
 window.editAdminBooking = editAdminBooking;
 window.cancelAdminBooking = cancelAdminBooking;
+
+// Make user menu functions globally available
+window.toggleUserMenu = toggleUserMenu;
+window.logout = logout;
+window.navigateToDashboard = navigateToDashboard;
+window.navigateToBookings = navigateToBookings;
+window.navigateToProfile = navigateToProfile;
 
 // =====================================================================
 // VIDEO GALLERY FUNCTIONALITY

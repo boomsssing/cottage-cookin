@@ -22,7 +22,7 @@
                     <li><a href="#calendar">Calendar</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#contact">Contact</a></li>
-                    <li><a href="#admin">Admin</a></li>
+                    <li><a href="#" id="authLink">Sign In</a></li>
                 </ul>
                 <div class="hamburger">
                     <span></span>
@@ -269,17 +269,141 @@
             </div>
         </section>
 
-        <!-- Admin Access Section -->
-        <section id="admin" class="admin-section">
-            <div class="container">
-                <h2>Admin Access</h2>
-                <div class="admin-access-card">
-                    <p>Access the admin panel to manage classes, bookings, and view analytics.</p>
-                    <a href="login.html" class="admin-access-button">Go to Admin Panel</a>
+
+    </main>
+
+    <!-- Authentication Modals -->
+    <!-- Sign In Modal -->
+    <div id="signInModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <span class="close-auth-modal" onclick="closeAuthModal()">&times;</span>
+            <h3>Sign In to Your Account</h3>
+            <form id="signInForm">
+                <div class="auth-form-group">
+                    <label for="signInEmail">Email:</label>
+                    <input type="email" id="signInEmail" required>
+                </div>
+                <div class="auth-form-group">
+                    <label for="signInPassword">Password:</label>
+                    <input type="password" id="signInPassword" required>
+                </div>
+                <button type="submit" class="auth-button">Sign In</button>
+                <div class="auth-forgot">
+                    <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+                </div>
+                <div class="auth-switch">
+                    <p>Don't have an account? <a href="#" onclick="switchToSignUp()">Sign Up</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signUpModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <span class="close-auth-modal" onclick="closeAuthModal()">&times;</span>
+            <h3>Create Your Account</h3>
+            <form id="signUpForm">
+                <div class="auth-form-row">
+                    <div class="auth-form-group">
+                        <label for="signUpFirstName">First Name:</label>
+                        <input type="text" id="signUpFirstName" required>
+                    </div>
+                    <div class="auth-form-group">
+                        <label for="signUpLastName">Last Name:</label>
+                        <input type="text" id="signUpLastName" required>
+                    </div>
+                </div>
+                <div class="auth-form-group">
+                    <label for="signUpEmail">Email:</label>
+                    <input type="email" id="signUpEmail" required>
+                </div>
+                <div class="auth-form-group">
+                    <label for="signUpPhone">Phone Number:</label>
+                    <input type="tel" id="signUpPhone" required>
+                </div>
+                <div class="auth-form-group">
+                    <label for="signUpPassword">Password:</label>
+                    <input type="password" id="signUpPassword" required minlength="6">
+                </div>
+                <div class="auth-form-group">
+                    <label for="signUpConfirmPassword">Confirm Password:</label>
+                    <input type="password" id="signUpConfirmPassword" required minlength="6">
+                </div>
+                <div class="auth-form-group">
+                    <label for="signUpDietary">Dietary Restrictions (optional):</label>
+                    <textarea id="signUpDietary" rows="2" placeholder="Any allergies or dietary preferences..."></textarea>
+                </div>
+                <button type="submit" class="auth-button">Create Account</button>
+                <div class="auth-switch">
+                    <p>Already have an account? <a href="#" onclick="switchToSignIn()">Sign In</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="auth-modal">
+        <div class="auth-modal-content">
+            <span class="close-auth-modal" onclick="closeAuthModal()">&times;</span>
+            <h3>Reset Your Password</h3>
+            <div id="forgotPasswordStep1">
+                <p>Enter your email address and we'll help you reset your password.</p>
+                <form id="forgotPasswordForm">
+                    <div class="auth-form-group">
+                        <label for="forgotEmail">Email Address:</label>
+                        <input type="email" id="forgotEmail" required placeholder="Enter your email">
+                    </div>
+                    <button type="submit" class="auth-button">Find My Account</button>
+                </form>
+                <div class="auth-switch">
+                    <p>Remember your password? <a href="#" onclick="switchToSignIn()">Sign In</a></p>
                 </div>
             </div>
-        </section>
-    </main>
+            
+            <div id="forgotPasswordStep2" style="display: none;">
+                <div class="account-found">
+                    <div class="user-preview">
+                        <div class="user-preview-avatar" id="previewAvatar">👤</div>
+                        <div class="user-preview-info">
+                            <h4 id="previewName">Account Found</h4>
+                            <p id="previewEmail">user@example.com</p>
+                            <p class="preview-details">
+                                <strong>Member since:</strong> <span id="previewDate">2025</span><br>
+                                <strong>Phone:</strong> <span id="previewPhone">Not provided</span>
+                            </p>
+                        </div>
+                    </div>
+                    <p>Is this your account? Choose a new password below:</p>
+                </div>
+                
+                <form id="resetPasswordForm">
+                    <div class="auth-form-group">
+                        <label for="newPassword">New Password:</label>
+                        <input type="password" id="newPassword" required minlength="6" placeholder="Enter new password">
+                    </div>
+                    <div class="auth-form-group">
+                        <label for="confirmNewPassword">Confirm New Password:</label>
+                        <input type="password" id="confirmNewPassword" required minlength="6" placeholder="Confirm new password">
+                    </div>
+                    <button type="submit" class="auth-button">Reset Password</button>
+                </form>
+                
+                <div class="auth-switch">
+                    <p><a href="#" onclick="goBackToEmailStep()">← Use Different Email</a></p>
+                </div>
+            </div>
+            
+            <div id="forgotPasswordStep3" style="display: none;">
+                <div class="success-message">
+                    <div class="success-icon">✅</div>
+                    <h4>Password Reset Successful!</h4>
+                    <p>Your password has been updated successfully. You can now sign in with your new password.</p>
+                    <button class="auth-button" onclick="switchToSignInAfterReset()">Sign In Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <div class="container">

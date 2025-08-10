@@ -1515,23 +1515,462 @@ window.navigateToBookings = navigateToBookings;
 window.navigateToProfile = navigateToProfile;
 
 // =====================================================================
+// FOOD GALLERY FUNCTIONALITY
+// =====================================================================
+
+// Food gallery data - accurately describing Chef Brian's actual culinary creations
+const foodGalleryData = [
+    {
+        id: 1,
+        title: "Professional Kitchen Setup",
+        description: "Chef Brian's professional kitchen workspace with stainless steel equipment and prep areas",
+        category: "appetizers",
+        src: "IMG_3627.jpg"
+    },
+    {
+        id: 2,
+        title: "Golden Honey or Caramel Drizzle",
+        description: "Beautiful golden honey or caramel being drizzled, showcasing Chef Brian's technique with sweet sauces",
+        category: "desserts",
+        src: "IMG_3628.jpg"
+    },
+    {
+        id: 3,
+        title: "Artisan Pizza Creation",
+        description: "Chef Brian's handcrafted pizza with perfectly charred crust and melted cheese, demonstrating traditional pizza-making skills",
+        category: "entrees",
+        src: "IMG_3629.jpg"
+    },
+    {
+        id: 4,
+        title: "French Onion Soup",
+        description: "Classic French onion soup with golden-brown melted cheese beautifully broiled on top in a ceramic crock",
+        category: "appetizers",
+        src: "IMG_3630.jpg"
+    },
+    {
+        id: 5,
+        title: "Artisan Cookies",
+        description: "Perfectly baked artisan cookies with golden-brown color and uniform texture",
+        category: "desserts",
+        src: "IMG_3631.jpg"
+    },
+    {
+        id: 6,
+        title: "Colorful Bean and Vegetable Dish",
+        description: "A vibrant dish featuring mixed beans and vegetables with rich colors and rustic presentation",
+        category: "entrees",
+        src: "IMG_3632.jpg"
+    },
+    {
+        id: 7,
+        title: "Chef Brian Teaching Moment",
+        description: "Chef Brian sharing culinary knowledge and techniques, demonstrating his passion for teaching cooking",
+        category: "appetizers",
+        src: "IMG_3633.jpg"
+    },
+    {
+        id: 8,
+        title: "Layered Parfait or Trifle",
+        description: "Beautiful layered dessert with colorful ingredients and cream, showcasing elegant dessert presentation",
+        category: "desserts",
+        src: "IMG_3634.jpg"
+    },
+    {
+        id: 9,
+        title: "Fresh Glazed Donuts",
+        description: "Golden-brown glazed donuts with perfect texture and artisan quality",
+        category: "desserts",
+        src: "IMG_3635.jpg"
+    },
+    {
+        id: 10,
+        title: "Chocolate Cupcakes with Frosting",
+        description: "Rich chocolate cupcakes topped with elaborate chocolate frosting and decorative elements",
+        category: "desserts",
+        src: "IMG_3636.jpg"
+    },
+    {
+        id: 11,
+        title: "Chef Brian with Artisan Pizza",
+        description: "Chef Brian proudly displaying his handcrafted artisan pizza with perfect crust and toppings",
+        category: "entrees",
+        src: "IMG_3637.jpg"
+    },
+    {
+        id: 12,
+        title: "Layered Dessert with Multiple Textures",
+        description: "An elegant multi-layered dessert showcasing different textures and flavors in professional presentation",
+        category: "desserts",
+        src: "IMG_3638.jpg"
+    },
+    {
+        id: 13,
+        title: "Loaded Baked Potatoes",
+        description: "Perfectly baked potatoes stuffed with creamy cheese, bacon, and toppings, professionally plated",
+        category: "entrees",
+        src: "IMG_3639.jpg"
+    },
+    {
+        id: 14,
+        title: "Baked Pasta Casserole",
+        description: "A rich baked pasta casserole with golden-brown cheese topping and perfectly melted layers",
+        category: "pasta",
+        src: "IMG_3640.jpg"
+    },
+    {
+        id: 15,
+        title: "Creamy Soup with Herbs",
+        description: "A creamy soup with fresh herb garnish and professional presentation",
+        category: "appetizers",
+        src: "IMG_3641.jpg"
+    },
+    {
+        id: 16,
+        title: "Pizza with Fresh Mozzarella",
+        description: "Artisan pizza topped with fresh mozzarella and herbs, showcasing traditional Italian pizza-making techniques",
+        category: "entrees",
+        src: "IMG_3642.jpg"
+    },
+    {
+        id: 17,
+        title: "Charcuterie and Fruit Grazing Board",
+        description: "Lavish charcuterie board featuring cheeses, cured meats, fresh fruits, and elegant presentation for events",
+        category: "appetizers",
+        src: "IMG_3643.jpg"
+    },
+    {
+        id: 18,
+        title: "Pasta with Green Pesto Sauce",
+        description: "Wide pasta noodles coated in vibrant green pesto sauce with generous grated cheese topping",
+        category: "pasta",
+        src: "IMG_3644.jpg"
+    },
+    {
+        id: 19,
+        title: "Classic Burger Meal",
+        description: "A juicy beef burger on a sesame bun, served with crispy french fries and an ear of corn generously coated in cheese",
+        category: "entrees",
+        src: "IMG_3645.jpg"
+    },
+    {
+        id: 20,
+        title: "Chicken Piccata Meal",
+        description: "Pan-fried chicken cutlets with creamy caper sauce, served alongside fluffy mashed potatoes and sautéed green beans with bacon bits",
+        category: "entrees",
+        src: "IMG_3646.jpg"
+    },
+    {
+        id: 21,
+        title: "Perfectly Grilled Meat",
+        description: "Expertly grilled meat with beautiful char marks and perfect doneness, showcasing advanced grilling techniques",
+        category: "entrees",
+        src: "IMG_3647.jpg"
+    },
+    {
+        id: 22,
+        title: "Colorful Autumn Vegetables",
+        description: "A beautiful array of autumn vegetables prepared with herbs and seasonings, highlighting seasonal cooking",
+        category: "appetizers",
+        src: "IMG_3648.jpg"
+    },
+    {
+        id: 23,
+        title: "Savory Meat Preparation",
+        description: "Carefully prepared meat dish with rich sauce and professional presentation, showing advanced protein cooking skills",
+        category: "entrees",
+        src: "IMG_3649.jpg"
+    },
+    {
+        id: 24,
+        title: "Elegant Canapé Selection",
+        description: "Sophisticated small plates and canapés with refined garnishes, perfect for upscale entertaining",
+        category: "appetizers",
+        src: "IMG_3651.jpg"
+    },
+    {
+        id: 25,
+        title: "Professional Meatball Display",
+        description: "Perfectly formed and cooked meatballs with consistent size and golden color, demonstrating classical technique",
+        category: "entrees",
+        src: "IMG_3652.jpg"
+    },
+    {
+        id: 26,
+        title: "Gourmet Pancakes",
+        description: "Artfully prepared pancakes with perfect golden color and professional plating, elevating a breakfast classic",
+        category: "desserts",
+        src: "IMG_3653.jpg"
+    },
+    {
+        id: 27,
+        title: "Fresh Herb and Dumpling Soup",
+        description: "A comforting soup with fresh herbs and handmade dumplings, showing expertise in traditional soup preparation",
+        category: "appetizers",
+        src: "IMG_3654.jpg"
+    },
+    {
+        id: 28,
+        title: "Premium Truffle Collection",
+        description: "An assortment of handcrafted chocolate truffles with various coatings, showcasing advanced confectionery skills",
+        category: "desserts",
+        src: "IMG_3655.jpg"
+    },
+    {
+        id: 29,
+        title: "Golden Pasta Creation",
+        description: "Beautifully prepared pasta dish with rich golden color and careful attention to texture and presentation",
+        category: "pasta",
+        src: "IMG_3656.jpg"
+    },
+    {
+        id: 30,
+        title: "Fresh Seafood and Vegetables",
+        description: "A light preparation featuring fresh seafood with vegetables, emphasizing clean flavors and healthy cooking",
+        category: "entrees",
+        src: "IMG_3657.jpg"
+    },
+    {
+        id: 31,
+        title: "Herb-Crusted Protein",
+        description: "Expertly prepared protein with herb crust, showing mastery of seasoning and cooking techniques",
+        category: "entrees",
+        src: "IMG_3658.jpg"
+    },
+    {
+        id: 32,
+        title: "Rustic Vegetable Medley",
+        description: "A hearty vegetable preparation with rustic charm and careful attention to cooking methods and seasoning",
+        category: "appetizers",
+        src: "IMG_3659.jpg"
+    },
+    {
+        id: 33,
+        title: "Rich Chocolate Dessert",
+        description: "An indulgent chocolate creation with multiple textures and professional dessert presentation techniques",
+        category: "desserts",
+        src: "IMG_3660.jpg"
+    },
+    {
+        id: 34,
+        title: "Artisan Bread Collection",
+        description: "A variety of handcrafted breads showing different techniques and grains, demonstrating breadmaking expertise",
+        category: "bread",
+        src: "IMG_3661.jpg"
+    },
+    {
+        id: 35,
+        title: "Classic Comfort Food",
+        description: "A beautifully executed comfort food dish with rich flavors and home-style presentation elevated to restaurant quality",
+        category: "entrees",
+        src: "IMG_3662.jpg"
+    },
+    {
+        id: 36,
+        title: "Fresh Green Preparation",
+        description: "A vibrant dish featuring fresh greens and herbs, emphasizing the beauty of simple, quality ingredients",
+        category: "appetizers",
+        src: "IMG_3663.jpg"
+    },
+    {
+        id: 37,
+        title: "Gourmet Meat Presentation",
+        description: "Expertly prepared and plated meat dish with professional garnish and sauce work, showing fine dining techniques",
+        category: "entrees",
+        src: "IMG_3665.jpg"
+    },
+    {
+        id: 38,
+        title: "Creative Pasta Innovation",
+        description: "An innovative pasta creation combining traditional techniques with modern presentation and unique flavor combinations",
+        category: "pasta",
+        src: "IMG_3666.jpg"
+    },
+    {
+        id: 39,
+        title: "Sophisticated Plated Entrée",
+        description: "An elegantly plated main course with careful attention to color, texture, and professional presentation standards",
+        category: "entrees",
+        src: "IMG_3668.jpg"
+    },
+    {
+        id: 40,
+        title: "Light and Fresh Creation",
+        description: "A delicate preparation emphasizing fresh ingredients and clean flavors with refined plating techniques",
+        category: "appetizers",
+        src: "IMG_3669.jpg"
+    }
+];
+
+let currentCategory = 'all';
+let lightboxIndex = 0;
+let currentPhotos = [];
+
+// Initialize food gallery
+function initFoodGallery() {
+    renderPhotoGrid();
+}
+
+// Show photos by category
+function showCategory(category) {
+    currentCategory = category;
+    
+    // Update active tab
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    renderPhotoGrid();
+}
+
+// Render photo grid
+function renderPhotoGrid() {
+    const grid = document.getElementById('photoGrid');
+    if (!grid) return;
+    
+    // Filter photos by category
+    currentPhotos = currentCategory === 'all' 
+        ? foodGalleryData 
+        : foodGalleryData.filter(photo => photo.category === currentCategory);
+    
+    grid.innerHTML = currentPhotos.map((photo, index) => `
+        <div class="photo-item" onclick="openLightbox(${index})">
+            <img src="${photo.src}" alt="${photo.title}" loading="lazy">
+            <div class="photo-caption">
+                <h4>${photo.title}</h4>
+                <p>${photo.description}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Lightbox functionality
+function openLightbox(index) {
+    lightboxIndex = index;
+    const modal = document.getElementById('lightboxModal');
+    const photo = currentPhotos[lightboxIndex];
+    
+    if (modal && photo) {
+        document.getElementById('lightboxImage').src = photo.src;
+        document.getElementById('lightboxTitle').textContent = photo.title;
+        document.getElementById('lightboxDescription').textContent = photo.description;
+        
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeLightbox() {
+    const modal = document.getElementById('lightboxModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function navigatePhoto(direction) {
+    lightboxIndex += direction;
+    
+    if (lightboxIndex < 0) {
+        lightboxIndex = currentPhotos.length - 1;
+    } else if (lightboxIndex >= currentPhotos.length) {
+        lightboxIndex = 0;
+    }
+    
+    const photo = currentPhotos[lightboxIndex];
+    if (photo) {
+        document.getElementById('lightboxImage').src = photo.src;
+        document.getElementById('lightboxTitle').textContent = photo.title;
+        document.getElementById('lightboxDescription').textContent = photo.description;
+    }
+}
+
+// Keyboard navigation for lightbox
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('lightboxModal');
+    if (modal && modal.style.display === 'flex') {
+        switch(e.key) {
+            case 'Escape':
+                closeLightbox();
+                break;
+            case 'ArrowLeft':
+                navigatePhoto(-1);
+                break;
+            case 'ArrowRight':
+                navigatePhoto(1);
+                break;
+        }
+    }
+});
+
+// Close lightbox when clicking outside image
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('lightboxModal');
+    if (e.target === modal) {
+        closeLightbox();
+    }
+});
+
+// Make gallery functions globally available
+window.showCategory = showCategory;
+window.openLightbox = openLightbox;
+window.closeLightbox = closeLightbox;
+window.navigatePhoto = navigatePhoto;
+
+// Initialize gallery when DOM is ready
+document.addEventListener('DOMContentLoaded', initFoodGallery);
+
+// =====================================================================
 // VIDEO GALLERY FUNCTIONALITY
 // =====================================================================
 
-// Video player controls
-function playMainVideo() {
-    const video = document.getElementById('mainVideo');
-    const overlay = document.querySelector('.video-overlay');
+// Universal video player controls
+function playVideo(videoId) {
+    const video = document.getElementById(videoId);
+    const overlay = video?.parentElement.querySelector('.video-overlay, .video-overlay-small');
     
     if (video) {
+        // Pause all other videos first
+        pauseAllVideos(videoId);
+        
         if (video.paused) {
             video.play();
-            overlay.style.opacity = '0';
+            if (overlay) overlay.style.opacity = '0';
+            showVideoMessage(`🎬 Playing: ${getVideoTitle(videoId)}`, 'info');
         } else {
             video.pause();
-            overlay.style.opacity = '1';
+            if (overlay) overlay.style.opacity = '1';
+            showVideoMessage(`⏸️ Paused: ${getVideoTitle(videoId)}`, 'info');
         }
     }
+}
+
+// Legacy function for backward compatibility
+function playMainVideo() {
+    playVideo('mainVideo');
+}
+
+// Pause all videos except the specified one
+function pauseAllVideos(exceptVideoId = null) {
+    const videos = document.querySelectorAll('video');
+    videos.forEach(video => {
+        if (video.id !== exceptVideoId && !video.paused) {
+            video.pause();
+            const overlay = video.parentElement.querySelector('.video-overlay, .video-overlay-small');
+            if (overlay) overlay.style.opacity = '1';
+        }
+    });
+}
+
+// Get video title for messages
+function getVideoTitle(videoId) {
+    const titles = {
+        'mainVideo': 'Las Vegas Birthday Cake',
+        'marinaraVideo': 'Making Marinara',
+        'pestoVideo': 'Fresh Pesto',
+        'saraleeVideo': 'Sara Lee Experience',
+        'tonydanzaVideo': 'Tony Danza Show'
+    };
+    return titles[videoId] || 'Video';
 }
 
 // Toggle fullscreen video
@@ -1745,40 +2184,13 @@ function showVideoMessage(text, type = 'info') {
     }, 3000);
 }
 
-// Video event listeners
+// Enhanced video event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    const video = document.getElementById('mainVideo');
-    const overlay = document.querySelector('.video-overlay');
+    // Initialize all video event listeners
+    initializeAllVideos();
     
-    if (video && overlay) {
-        // Update overlay visibility based on video state
-        video.addEventListener('play', () => {
-            overlay.style.opacity = '0';
-        });
-        
-        video.addEventListener('pause', () => {
-            overlay.style.opacity = '1';
-        });
-        
-        video.addEventListener('ended', () => {
-            overlay.style.opacity = '1';
-            showVideoMessage('🎬 Video finished! Thanks for watching!', 'success');
-        });
-        
-        // Click on video to toggle play/pause
-        video.addEventListener('click', playMainVideo);
-        
-        // Keyboard controls
-        document.addEventListener('keydown', function(e) {
-            if (e.code === 'Space' && e.target === video) {
-                e.preventDefault();
-                playMainVideo();
-            } else if (e.code === 'KeyF' && e.target === video) {
-                e.preventDefault();
-                toggleFullscreen();
-            }
-        });
-    }
+    // Initialize the food gallery
+    initFoodGallery();
     
     // Gallery item click handlers (for future expansion)
     const galleryItems = document.querySelectorAll('.gallery-item');
@@ -1790,8 +2202,94 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Initialize all video functionality
+function initializeAllVideos() {
+    const videos = document.querySelectorAll('video');
+    
+    videos.forEach(video => {
+        const overlay = video.parentElement.querySelector('.video-overlay, .video-overlay-small');
+        
+        if (video && overlay) {
+            // Update overlay visibility based on video state
+            video.addEventListener('play', () => {
+                overlay.style.opacity = '0';
+            });
+            
+            video.addEventListener('pause', () => {
+                overlay.style.opacity = '1';
+            });
+            
+            video.addEventListener('ended', () => {
+                overlay.style.opacity = '1';
+                showVideoMessage(`🎬 ${getVideoTitle(video.id)} finished! Thanks for watching!`, 'success');
+            });
+            
+            // Click on video to toggle play/pause
+            video.addEventListener('click', () => playVideo(video.id));
+            
+            // Keyboard controls for focused videos
+            video.addEventListener('keydown', function(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    playVideo(video.id);
+                } else if (e.code === 'KeyF' && video.id === 'mainVideo') {
+                    e.preventDefault();
+                    toggleFullscreen();
+                }
+            });
+            
+            // Add loading state handling
+            video.addEventListener('loadstart', () => {
+                showVideoMessage(`⏳ Loading ${getVideoTitle(video.id)}...`, 'info');
+            });
+            
+            video.addEventListener('canplay', () => {
+                showVideoMessage(`✅ ${getVideoTitle(video.id)} ready to play!`, 'success');
+            });
+            
+            video.addEventListener('error', () => {
+                showVideoMessage(`❌ Error loading ${getVideoTitle(video.id)}`, 'error');
+            });
+        }
+    });
+    
+    // Add video performance optimization
+    addVideoOptimizations();
+}
+
+// Add video performance optimizations
+function addVideoOptimizations() {
+    const videos = document.querySelectorAll('video');
+    
+    videos.forEach(video => {
+        // Preload metadata only for better performance
+        video.preload = 'metadata';
+        
+        // Add intersection observer for lazy loading
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && video.preload !== 'auto') {
+                    video.preload = 'auto';
+                    observer.unobserve(video);
+                }
+            });
+        }, {
+            rootMargin: '50px'
+        });
+        
+        observer.observe(video);
+    });
+}
+
+// =====================================================================
+
+
 // Export video functions for global access
+window.playVideo = playVideo;
 window.playMainVideo = playMainVideo;
+window.pauseAllVideos = pauseAllVideos;
+window.getVideoTitle = getVideoTitle;
+window.initializeAllVideos = initializeAllVideos;
 window.toggleFullscreen = toggleFullscreen;
 window.shareVideo = shareVideo;
 window.downloadVideo = downloadVideo;

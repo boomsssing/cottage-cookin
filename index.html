@@ -24,6 +24,7 @@
                     <li><a href="#contact">Contact</a></li>
                     <li><a href="#" id="authLink">Sign In</a></li>
                 </ul>
+
                 <div class="hamburger">
                     <span></span>
                     <span></span>
@@ -82,13 +83,15 @@
             </div>
         </section>
 
-        <!-- Video Gallery Section -->
+        <!-- Gallery Section -->
         <section id="gallery" class="gallery-section">
             <div class="container">
-                <h2>Chef Brian's Culinary Achievements</h2>
-                <p class="gallery-intro">Explore some of Chef Brian's remarkable culinary creations and achievements throughout his distinguished career.</p>
+                <h2>Chef Brian's Culinary Gallery</h2>
+                <p class="gallery-intro">Explore Chef Brian's remarkable culinary creations and achievements throughout his distinguished career.</p>
                 
-                <div class="video-gallery">
+                <!-- Video Gallery Grid -->
+                <div class="video-gallery-grid">
+                    <!-- Featured Video - Las Vegas Cake -->
                     <div class="featured-video">
                         <div class="video-container">
                             <video id="mainVideo" controls poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQ1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMmM1NTMwIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI0MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNsaWNrIHRvIFBsYXkgVmlkZW88L3RleHQ+CiAgPHRleHQgeD0iNTAlIiB5PSI2MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iI2E4Yzg5NCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TGFzIFZlZ2FzIEJpcnRoZGF5IENha2U8L3RleHQ+Cjwvc3ZnPgo=">
@@ -96,60 +99,176 @@
                                 Your browser does not support the video tag.
                             </video>
                             <div class="video-overlay">
-                                <div class="play-button" onclick="playMainVideo()">
+                                <div class="play-button" onclick="playVideo('mainVideo')">
                                     <span>▶</span>
                                 </div>
                             </div>
                         </div>
                         <div class="video-info">
                             <h3>World's Largest Birthday Cake - Las Vegas Centennial</h3>
-                            <p>Chef Brian Averna was the architect of the World's Largest Birthday Cake weighing 132,000 pounds, celebrating Las Vegas' 100th birthday in 2005. This extraordinary culinary achievement showcased his expertise in large-scale food production and innovation.</p>
+                            <p>Chef Brian Averna was the architect of the World's Largest Birthday Cake weighing 132,000 pounds, celebrating Las Vegas' 100th birthday in 2005.</p>
                             <div class="video-meta">
-                                <span class="video-tag">Culinary Achievement</span>
                                 <span class="video-tag">World Record</span>
                                 <span class="video-tag">Las Vegas 2005</span>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="video-controls">
-                        <button class="control-btn" onclick="toggleFullscreen()">🔳 Fullscreen</button>
-                        <button class="control-btn" onclick="shareVideo()">📤 Share</button>
-                    </div>
-                    
-                    <div class="gallery-grid">
-                        <div class="gallery-item">
-                            <div class="gallery-placeholder">
-                                <span>📺</span>
-                                <p>TV Appearances</p>
-                                <small>The Today Show, Rachael Ray, Paula Deen & More</small>
+
+                    <!-- Video Collection -->
+                    <div class="video-collection">
+                        <h3>Chef Brian's Culinary Journey</h3>
+                        <div class="video-grid">
+                            <!-- Making Marinara Video -->
+                            <div class="video-card">
+                                <div class="video-container-small">
+                                    <video id="marinaraVideo" controls poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMmM1NTMwIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI0NSUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk1ha2luZyBNYXJpbmFyYTwvdGV4dD4KICA8dGV4dCB4PSI1MCUiIHk9IjU1JSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjYThjODk0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5DbGljayB0byBQbGF5PC90ZXh0Pgo8L3N2Zz4K">
+                                        <source src="Making Marinara- Brian Averna.mov - Brian Averna (360p, h264).mp4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <div class="video-overlay-small">
+                                        <div class="play-button-small" onclick="playVideo('marinaraVideo')">
+                                            <span>▶</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="video-card-info">
+                                    <h4>Making Marinara with Chef Brian</h4>
+                                    <p>Watch Chef Brian demonstrate his signature marinara sauce technique, showcasing traditional Italian cooking methods and ingredient selection.</p>
+                                    <div class="video-tags">
+                                        <span class="video-tag-small">Cooking Technique</span>
+                                        <span class="video-tag-small">Italian Cuisine</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="gallery-item">
-                            <div class="gallery-placeholder">
-                                <span>🏢</span>
-                                <p>Corporate Work</p>
-                                <small>Sara Lee Senior Executive Chef</small>
+
+                            <!-- Pesto Video -->
+                            <div class="video-card">
+                                <div class="video-container-small">
+                                    <video id="pestoVideo" controls poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMmM1NTMwIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI0NSUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkZyZXNoIFBlc3RvPC90ZXh0PgogIDx0ZXh0IHg9IjUwJSIgeT0iNTUlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiNhOGM4OTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkNsaWNrIHRvIFBsYXk8L3RleHQ+Cjwvc3ZnPgo=">
+                                        <source src="pesto - Brian Averna (360p, h264).mp4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <div class="video-overlay-small">
+                                        <div class="play-button-small" onclick="playVideo('pestoVideo')">
+                                            <span>▶</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="video-card-info">
+                                    <h4>Fresh Pesto Preparation</h4>
+                                    <p>Learn the secrets of making authentic pesto with fresh basil, pine nuts, and Parmigiano-Reggiano from Chef Brian's expertise.</p>
+                                    <div class="video-tags">
+                                        <span class="video-tag-small">Fresh Ingredients</span>
+                                        <span class="video-tag-small">Traditional Methods</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="gallery-item">
-                            <div class="gallery-placeholder">
-                                <span>🍽️</span>
-                                <p>Food Innovations</p>
-                                <small>Served at Major Food Chains</small>
+
+                            <!-- Sara Lee Video -->
+                            <div class="video-card">
+                                <div class="video-container-small">
+                                    <video id="saraleeVideo" controls poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMmM1NTMwIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI0MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNhcmEgTGVlPC90ZXh0PgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5FeGVjdXRpdmUgQ2hlZjwvdGV4dD4KICA8dGV4dCB4PSI1MCUiIHk9IjYwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjYThjODk0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5DbGljayB0byBQbGF5PC90ZXh0Pgo8L3N2Zz4K">
+                                        <source src="Sara Lee reel - Brian Averna (720p, h264).mp4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <div class="video-overlay-small">
+                                        <div class="play-button-small" onclick="playVideo('saraleeVideo')">
+                                            <span>▶</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="video-card-info">
+                                    <h4>Sara Lee Senior Executive Chef</h4>
+                                    <p>Behind-the-scenes look at Chef Brian's role as Senior Executive Chef at Sara Lee, developing nationwide food innovations.</p>
+                                    <div class="video-tags">
+                                        <span class="video-tag-small">Corporate Experience</span>
+                                        <span class="video-tag-small">Food Innovation</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="gallery-item">
-                            <div class="gallery-placeholder">
-                                <span>🎓</span>
-                                <p>Culinary Education</p>
-                                <small>Culinary Institute of America Graduate</small>
+
+                            <!-- Tony Danza Show Video -->
+                            <div class="video-card">
+                                <div class="video-container-small">
+                                    <video id="tonydanzaVideo" controls poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMmM1NTMwIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI0MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlRvbnkgRGFuemE8L3RleHQ+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNob3cgQXBwZWFyYW5jZTwvdGV4dD4KICA8dGV4dCB4PSI1MCUiIHk9IjYwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjYThjODk0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5DbGljayB0byBQbGF5PC90ZXh0Pgo8L3N2Zz4K">
+                                        <source src="Tony Danza - Brian Averna (480p, h264).mp4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <div class="video-overlay-small">
+                                        <div class="play-button-small" onclick="playVideo('tonydanzaVideo')">
+                                            <span>▶</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="video-card-info">
+                                    <h4>The Tony Danza Show</h4>
+                                    <p>Chef Brian's television appearance on The Tony Danza Show, demonstrating culinary techniques and sharing cooking wisdom with viewers.</p>
+                                    <div class="video-tags">
+                                        <span class="video-tag-small">TV Appearance</span>
+                                        <span class="video-tag-small">Media Expert</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Food Gallery -->
+                <div class="food-gallery">
+                    <h3>Culinary Creations</h3>
+                    <div class="gallery-tabs">
+                        <button class="tab-btn active" onclick="showCategory('all')">All</button>
+                        <button class="tab-btn" onclick="showCategory('pasta')">Pasta & Italian</button>
+                        <button class="tab-btn" onclick="showCategory('desserts')">Desserts</button>
+                        <button class="tab-btn" onclick="showCategory('bread')">Breads & Baking</button>
+                        <button class="tab-btn" onclick="showCategory('entrees')">Main Courses</button>
+                        <button class="tab-btn" onclick="showCategory('appetizers')">Appetizers</button>
+                    </div>
+                    
+                    <div class="photo-grid" id="photoGrid">
+                        <!-- Food photos will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Achievement Cards -->
+                <div class="achievement-grid">
+                    <div class="achievement-item">
+                        <span>📺</span>
+                        <h4>TV Appearances</h4>
+                        <p>The Today Show, Rachael Ray, Paula Deen & More</p>
+                    </div>
+                    <div class="achievement-item">
+                        <span>🏢</span>
+                        <h4>Corporate Experience</h4>
+                        <p>Sara Lee Senior Executive Chef</p>
+                    </div>
+                    <div class="achievement-item">
+                        <span>🍽️</span>
+                        <h4>Food Innovations</h4>
+                        <p>Served at Major Food Chains Nationwide</p>
+                    </div>
+                    <div class="achievement-item">
+                        <span>🎓</span>
+                        <h4>Culinary Education</h4>
+                        <p>Culinary Institute of America Graduate</p>
+                    </div>
+                </div>
             </div>
         </section>
+
+        <!-- Lightbox Modal -->
+        <div id="lightboxModal" class="lightbox-modal">
+            <div class="lightbox-content">
+                <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+                <button class="lightbox-nav lightbox-prev" onclick="navigatePhoto(-1)">‹</button>
+                <img id="lightboxImage" src="" alt="">
+                <button class="lightbox-nav lightbox-next" onclick="navigatePhoto(1)">›</button>
+                <div class="lightbox-info">
+                    <h4 id="lightboxTitle"></h4>
+                    <p id="lightboxDescription"></p>
+                </div>
+            </div>
+        </div>
 
         <!-- Calendar & Booking Section -->
         <section id="calendar" class="calendar-section">
@@ -361,7 +480,7 @@
                 </div>
             </div>
             
-            <div id="forgotPasswordStep2" style="display: none;">
+            <div id="forgotPasswordStep2">
                 <div class="account-found">
                     <div class="user-preview">
                         <div class="user-preview-avatar" id="previewAvatar">👤</div>
@@ -394,7 +513,7 @@
                 </div>
             </div>
             
-            <div id="forgotPasswordStep3" style="display: none;">
+            <div id="forgotPasswordStep3">
                 <div class="success-message">
                     <div class="success-icon">✅</div>
                     <h4>Password Reset Successful!</h4>

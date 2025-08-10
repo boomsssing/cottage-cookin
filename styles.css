@@ -491,10 +491,28 @@ footer p {
 @media (max-width: 768px) {
     .hamburger {
         display: flex;
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
     }
     
     .nav-menu {
         display: none;
+    }
+    
+    /* Centered logo and hidden text on mobile */
+    .nav-container {
+        position: relative;
+        justify-content: center;
+    }
+
+    .logo-text {
+        display: none;
+    }
+
+    .logo-img {
+        height: 120px;
     }
     
     
@@ -502,7 +520,8 @@ footer p {
     .hero {
         flex-direction: column;
         text-align: center;
-        padding: 70px 14px 42px;
+        /* Increase top padding to account for taller navbar on mobile */
+        padding: 140px 14px 42px;
     }
     
     .hero-content {
@@ -564,6 +583,10 @@ footer p {
         padding: 0 15px;
     }
     
+    .logo-img {
+        height: 130px;
+    }
+
     h1 {
         font-size: 2rem;
     }

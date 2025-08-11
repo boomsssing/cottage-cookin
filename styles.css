@@ -45,11 +45,11 @@ h1, h2, h3 {
 }
 
 h1 {
-    font-size: 2.8rem;
-    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
     color: var(--accent-secondary);
-    line-height: 1.2;
-    font-weight: 700;
+    line-height: 1.3;
+    font-weight: 600;
 }
 
 h2 {
@@ -142,10 +142,10 @@ h3 {
 
 /* Hero Section */
 .hero {
-    padding: 160px 20px 120px;
+    padding: 84px 14px 56px;
     display: flex;
     align-items: center;
-    min-height: 85vh;
+    min-height: 70vh;
     background: var(--hero-gradient);
 }
 
@@ -156,32 +156,31 @@ h3 {
 }
 
 .hero-content p {
-    font-size: 1.3rem;
-    margin-bottom: 3rem;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
     color: var(--text-secondary);
-    line-height: 1.9;
+    line-height: 1.6;
     font-weight: 400;
 }
 
 .cta-button {
     background: var(--accent-primary);
     color: white;
-    padding: 20px 45px;
+    padding: 15px 30px;
     border: none;
-    border-radius: 12px;
-    font-size: 1.3rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-top: 20px;
-    box-shadow: 0 6px 20px rgba(122, 154, 77, 0.25);
-    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(122, 154, 77, 0.2);
 }
 
 .cta-button:hover {
     background: var(--accent-secondary);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(122, 154, 77, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(122, 154, 77, 0.3);
 }
 
 .hero-image {

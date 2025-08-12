@@ -83,33 +83,30 @@ h3 {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 0.4fr auto 1.6fr;
     align-items: center;
+    gap: 20px;
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: center;
+    grid-column: 2;
 }
 
 .logo-img {
-    height: 100px;
+    height: 120px;
     width: auto;
-}
-
-.logo-text {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--accent-secondary);
 }
 
 .nav-menu {
     display: flex;
     list-style: none;
     gap: 2rem;
+    justify-self: end;
+    grid-column: 3;
 }
 
 .nav-menu a {
@@ -488,16 +485,38 @@ footer p {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .nav-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+    
+    .logo {
+        grid-column: unset;
+        justify-content: center;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
     .hamburger {
         display: flex;
+        position: absolute;
+        right: 20px;
     }
     
     .nav-menu {
         display: none;
+        grid-column: unset;
     }
     
     .navbar {
         padding: 0.8rem 0;
+    }
+    
+    .logo-img {
+        height: 100px;
     }
     
     .hero {
@@ -607,9 +626,7 @@ footer p {
         height: 140px;
     }
     
-    .logo-text {
-        font-size: 1.2rem;
-    }
+
 }
 
 /* Video Gallery Section */

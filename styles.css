@@ -484,17 +484,23 @@ margin-bottom: 10px;
 @media (max-width: 768px) {
 .nav-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    position: relative;
 }
 
 .logo {
     grid-column: unset;
     justify-content: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .hamburger {
     display: flex;
+    position: absolute;
+    right: 20px;
 }
 
 .nav-menu {

@@ -1,3 +1,42 @@
+// Auto-hide Navbar on Scroll
+let lastScrollTop = 0;
+let navbar = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    navbar = document.querySelector('.navbar');
+    let ticking = false;
+
+    function updateNavbar() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Don't hide navbar at the very top of the page
+        if (scrollTop <= 100) {
+            navbar.classList.remove('hidden');
+            navbar.classList.add('visible');
+        } else if (scrollTop > lastScrollTop && scrollTop > 150) {
+            // Scrolling down - hide navbar
+            navbar.classList.add('hidden');
+            navbar.classList.remove('visible');
+        } else if (scrollTop < lastScrollTop) {
+            // Scrolling up - show navbar
+            navbar.classList.remove('hidden');
+            navbar.classList.add('visible');
+        }
+        
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
+        ticking = false;
+    }
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(updateNavbar);
+            ticking = true;
+        }
+    }
+
+    window.addEventListener('scroll', requestTick);
+});
+
 // Authentication System
 class AuthSystem {
     constructor() {
@@ -1891,9 +1930,9 @@ const foodGalleryData = [
     },
     {
         id: 2,
-        title: "Golden Honey or Caramel Drizzle",
-        description: "Beautiful golden honey or caramel being drizzled, showcasing Chef Brian's technique with sweet sauces",
-        category: "desserts",
+        title: "Fresh Spaghetti with Rich Sauce",
+        description: "Perfectly cooked spaghetti being lifted with a fork, showcasing Chef Brian's Italian pasta techniques",
+        category: "pasta",
         src: "IMG_3628.jpg"
     },
     {
@@ -1961,9 +2000,9 @@ const foodGalleryData = [
     },
     {
         id: 12,
-        title: "Layered Dessert with Multiple Textures",
-        description: "An elegant multi-layered dessert showcasing different textures and flavors in professional presentation",
-        category: "desserts",
+        title: "Sheet Pan Pizza Preparation",
+        description: "Multiple sheet pans with pizza preparation showing Chef Brian's Italian cooking techniques and batch preparation methods",
+        category: "pasta",
         src: "IMG_3638.jpg"
     },
     {
@@ -2059,9 +2098,9 @@ const foodGalleryData = [
     },
     {
         id: 26,
-        title: "Gourmet Pancakes",
-        description: "Artfully prepared pancakes with perfect golden color and professional plating, elevating a breakfast classic",
-        category: "desserts",
+        title: "Crispy Potato Pancakes",
+        description: "Golden-brown potato pancakes served with sour cream and applesauce, showcasing traditional cooking techniques",
+        category: "appetizers",
         src: "IMG_3653.jpg"
     },
     {
@@ -2071,13 +2110,7 @@ const foodGalleryData = [
         category: "appetizers",
         src: "IMG_3654.jpg"
     },
-    {
-        id: 28,
-        title: "Premium Truffle Collection",
-        description: "An assortment of handcrafted chocolate truffles with various coatings, showcasing advanced confectionery skills",
-        category: "desserts",
-        src: "IMG_3655.jpg"
-    },
+
     {
         id: 29,
         title: "Golden Pasta Creation",
@@ -2106,13 +2139,7 @@ const foodGalleryData = [
         category: "appetizers",
         src: "IMG_3659.jpg"
     },
-    {
-        id: 33,
-        title: "Rich Chocolate Dessert",
-        description: "An indulgent chocolate creation with multiple textures and professional dessert presentation techniques",
-        category: "desserts",
-        src: "IMG_3660.jpg"
-    },
+
     {
         id: 34,
         title: "Artisan Bread Collection",

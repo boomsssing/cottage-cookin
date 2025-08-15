@@ -629,7 +629,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initialize calendar
-    initializeCalendar();
+    const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+    initializeCalendar(currentFilter);
     
     // Navigation link active state
     const navLinks = document.querySelectorAll('.nav-menu a');
@@ -648,7 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // USER-FRIENDLY Calendar with real-time updates
-function initializeCalendar() {
+function initializeCalendar(categoryFilter = 'all') {
     const calendar = document.getElementById('calendar');
     if (!calendar) return;
     
@@ -657,10 +658,36 @@ function initializeCalendar() {
     const today = new Date();
     
     // Filter only future classes and sort by date
-    const futureClasses = availableDates
+    let futureClasses = availableDates
         .filter(item => new Date(item.date) >= today)
-        .sort((a, b) => new Date(a.date) - new Date(b.date))
-        .slice(0, 6); // Show next 6 classes
+        .sort((a, b) => new Date(a.date) - new Date(b.date)); // Show ALL classes
+    
+    // Apply category filter if not 'all'
+    if (categoryFilter !== 'all') {
+        futureClasses = futureClasses.filter(item => {
+            const className = item.class.toLowerCase();
+            switch (categoryFilter) {
+                case 'international':
+                    return className.includes('winter soups') || className.includes('asian') || className.includes('mediterranean') || className.includes('french');
+                case 'italian':
+                    return className.includes('italian') || className.includes('pasta');
+                case 'holiday':
+                    return className.includes('thanksgiving') || className.includes('christmas') || className.includes('easter') || className.includes('new year') || className.includes('holiday');
+                case 'appetizers':
+                    return className.includes('appetizer') || className.includes('cheese') || className.includes('starter') || className.includes('party');
+                case 'desserts':
+                    return className.includes('dessert') || className.includes('chocolate') || className.includes('cake') || className.includes('fruit dessert');
+                case 'bread':
+                    return className.includes('bread') || className.includes('sourdough') || className.includes('artisan');
+                case 'baking':
+                    return className.includes('cookie') || className.includes('pastry') || className.includes('tart') || className.includes('savory baking');
+                case 'seasonal':
+                    return className.includes('spring') || className.includes('summer') || className.includes('fall') || className.includes('winter comfort');
+                default:
+                    return true;
+            }
+        });
+    }
     
     let calendarHTML = `
         <div class="calendar-header">
@@ -692,7 +719,7 @@ function initializeCalendar() {
             const canBook = item.seats > 0;
             
             calendarHTML += `
-                <div class="class-card-calendar" ${canBook ? `onclick="quickBook('${item.class}', '${item.date}')"` : ''}>
+                <div class="class-card-calendar" onclick="showClassDetails('${item.class.replace(/'/g, "\\'")}', '${item.date}', '${item.time}', '${item.description.replace(/'/g, "\\'")}', ${item.seats})">
                     ${isToday ? '<div style="position: absolute; top: -5px; right: -5px; background: #dc3545; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.6rem; font-weight: bold;">TODAY</div>' : ''}
                     
                     <div class="date-circle" style="background: ${seatColor};">
@@ -702,13 +729,15 @@ function initializeCalendar() {
                     
                     <div class="class-info-compact">
                         <div class="class-title-compact">${item.class}</div>
-                        <div class="class-date-compact">${dayName}, ${monthDay}</div>
+                        <div class="class-date-compact">${dayName}, ${monthDay} ${item.time ? `at ${item.time}` : ''}</div>
+                        ${item.description ? `<div class="class-description-compact" style="font-size: 0.65rem; color: #666; margin-top: 4px; line-height: 1.2;">${item.description.substring(0, 80)}${item.description.length > 80 ? '...' : ''}</div>` : ''}
                         <div class="class-availability-compact">
                             ${item.seats === 0 ? '🚫 FULL' : 
                               item.seats === 1 ? '⚠️ 1 SEAT LEFT' : 
                               item.seats <= 2 ? `⚠️ ${item.seats} SEATS LEFT` : 
                               `✅ ${item.seats} AVAILABLE`}
                         </div>
+                        <div style="font-size: 0.6rem; color: #7a9a4d; margin-top: 8px; font-weight: 600;">Click for details →</div>
                     </div>
                 </div>
             `;
@@ -724,6 +753,230 @@ function initializeCalendar() {
     
     calendar.innerHTML = calendarHTML;
     console.log('📅 Calendar updated with', futureClasses.length, 'available classes');
+}
+
+// Filter calendar by category
+function filterCalendarByCategory() {
+    const categoryFilter = document.getElementById('categoryFilter');
+    if (!categoryFilter) return;
+    
+    const selectedCategory = categoryFilter.value;
+    console.log('🔍 Filtering calendar by category:', selectedCategory);
+    
+    // Reinitialize calendar with the selected filter
+    initializeCalendar(selectedCategory);
+}
+
+// Show class details popup
+function showClassDetails(className, date, time, description, seatsAvailable) {
+    const formattedDate = new Date(date).toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    // Get price for class
+    const classPricing = {
+        'Classic Italian American I': '$125',
+        'Classic Italian American II': '$135',
+        'Classic Italian American III': '$145',
+        'Pasta Sauces': '$95',
+        'Fresh Scratch Pasta': '$115',
+        'Thanksgiving Sides': '$105',
+        'Holiday Appetizers': '$125',
+        'Holiday Chocolate Desserts': '$85',
+        'Easy Breads': '$95',
+        'International Winter Soups': '$85'
+    };
+    
+    const price = classPricing[className] || 'Contact for pricing';
+    
+    // Create and show popup
+    const popup = document.createElement('div');
+    popup.id = 'classDetailsPopup';
+    popup.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    popup.innerHTML = `
+        <div style="
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            position: relative;
+        ">
+            <button onclick="closeClassDetails()" style="
+                position: absolute;
+                top: 15px;
+                right: 20px;
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: #666;
+                padding: 5px;
+            ">&times;</button>
+            
+            <div style="margin-bottom: 20px;">
+                <h2 style="color: #2c5530; margin-bottom: 10px; font-size: 1.5rem;">${className}</h2>
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <span style="background: #7a9a4d; color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: 600;">${price}</span>
+                    <span style="color: #666; font-size: 0.9rem;">📅 ${formattedDate}</span>
+                    <span style="color: #666; font-size: 0.9rem;">⏰ ${time}</span>
+                </div>
+                <div style="color: ${seatsAvailable === 0 ? '#dc3545' : seatsAvailable <= 2 ? '#fd7e14' : '#7a9a4d'}; font-weight: 600; font-size: 0.9rem; margin-bottom: 20px;">
+                    ${seatsAvailable === 0 ? '🚫 FULLY BOOKED' : 
+                      seatsAvailable === 1 ? '⚠️ ONLY 1 SEAT LEFT!' : 
+                      seatsAvailable <= 2 ? `⚠️ ONLY ${seatsAvailable} SEATS LEFT!` : 
+                      `✅ ${seatsAvailable} SEATS AVAILABLE`}
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #2c5530; margin-bottom: 12px; font-size: 1.1rem;">What You'll Learn & Create:</h3>
+                <div style="background: #f8faf8; padding: 15px; border-radius: 8px; border-left: 4px solid #7a9a4d;">
+                    <p style="margin: 0; line-height: 1.6; color: #333; font-size: 0.9rem;">${description.replace(/•/g, '<br/>•')}</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 25px;">
+                ${seatsAvailable > 0 ? 
+                    `<button onclick="bookThisClass('${className}', '${date}')" style="
+                        background: #7a9a4d;
+                        color: white;
+                        border: none;
+                        padding: 12px 30px;
+                        border-radius: 8px;
+                        font-size: 1rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        margin-right: 10px;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='#5a7a3d'" onmouseout="this.style.background='#7a9a4d'">
+                        📅 Book This Class
+                    </button>` : 
+                    `<div style="
+                        background: #f8d7da;
+                        color: #721c24;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        display: inline-block;
+                        margin-right: 10px;
+                    ">
+                        🚫 This class is fully booked
+                    </div>`
+                }
+                <button onclick="closeClassDetails()" style="
+                    background: #e9ecef;
+                    color: #333;
+                    border: none;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    font-size: 1rem;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.background='#d4dae1'" onmouseout="this.style.background='#e9ecef'">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    document.body.style.overflow = 'hidden';
+    
+    // Add fadeIn animation
+    if (!document.getElementById('popupStyles')) {
+        const style = document.createElement('style');
+        style.id = 'popupStyles';
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Close class details popup
+function closeClassDetails() {
+    const popup = document.getElementById('classDetailsPopup');
+    if (popup) {
+        popup.remove();
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Book this specific class
+function bookThisClass(className, date) {
+    closeClassDetails();
+    
+    // Auto-fill the booking form
+    const classSelect = document.getElementById('className');
+    const dateInput = document.getElementById('classDate');
+    
+    if (classSelect && dateInput) {
+        // Map class names to form values
+        const classMap = {
+            'Classic Italian American I': 'classic-italian-1',
+            'Classic Italian American II': 'classic-italian-2',
+            'Classic Italian American III': 'classic-italian-3',
+            'Pasta Sauces': 'pasta-sauces',
+            'Fresh Scratch Pasta': 'fresh-pasta',
+            'Thanksgiving Sides': 'thanksgiving',
+            'Holiday Appetizers': 'holiday-appetizers',
+            'Holiday Chocolate Desserts': 'holiday-desserts',
+            'Easy Breads': 'easy-breads',
+            'International Winter Soups': 'winter-soups'
+        };
+        
+        const classValue = classMap[className];
+        if (classValue) {
+            classSelect.value = classValue;
+            dateInput.value = date;
+            
+            // Scroll to booking form smoothly
+            document.querySelector('.booking-form').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+            
+            // Highlight the form
+            const form = document.querySelector('.booking-form');
+            form.style.boxShadow = '0 0 20px rgba(122, 154, 77, 0.5)';
+            form.style.transform = 'scale(1.02)';
+            
+            setTimeout(() => {
+                form.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
+                form.style.transform = 'scale(1)';
+            }, 2000);
+            
+            // Show helpful message
+            const message = document.createElement('div');
+            message.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #7a9a4d; color: white; padding: 10px 15px; border-radius: 5px; z-index: 1001; font-size: 0.9rem;';
+            message.textContent = `✅ ${className} selected! Complete your booking below.`;
+            document.body.appendChild(message);
+            
+            setTimeout(() => message.remove(), 3000);
+        }
+    }
 }
 
 // Quick booking function
@@ -782,13 +1035,48 @@ function getClassesFromStorage() {
         return classes;
     }
     
-    // Default classes if none stored
+    // 2025 Culinary Class Schedule - EXACT from client specification
     const defaultClasses = [
-        { date: '2025-02-14', class: 'Artisan Bread Making', seats: 4, id: 1 },
-        { date: '2025-02-17', class: 'Farm-to-Table Cooking', seats: 6, id: 2 },
-        { date: '2025-02-21', class: 'Classic Desserts', seats: 3, id: 3 },
-        { date: '2025-02-24', class: 'Artisan Bread Making', seats: 5, id: 4 },
-        { date: '2025-02-28', class: 'Farm-to-Table Cooking', seats: 2, id: 5 }
+        // Classic Italian American I - 9/20/25 6:00-9:00, 11/1/25 6:00-9:00
+        { date: '2025-09-20', class: 'Classic Italian American I', seats: 8, id: 1, time: '6:00-9:00 PM', description: 'Sicilian Orange Salad • Three Cheese Garlic Bread • Tuscan White Bean Spread • Spaghetti with Fresh Pomodoro Sauce • Zabaglione' },
+        { date: '2025-11-01', class: 'Classic Italian American I', seats: 8, id: 2, time: '6:00-9:00 PM', description: 'Sicilian Orange Salad • Three Cheese Garlic Bread • Tuscan White Bean Spread • Spaghetti with Fresh Pomodoro Sauce • Zabaglione' },
+        
+        // Classic Italian American II - 10/4/25 6:00-9:00, 11/8/25 6:00-9:00
+        { date: '2025-10-04', class: 'Classic Italian American II', seats: 8, id: 3, time: '6:00-9:00 PM', description: 'Sausage Stuffed Mushrooms • Panzanella Salad • Homemade Pappardelle Alla Vodka • Chocolate Amaretto Soufflé' },
+        { date: '2025-11-08', class: 'Classic Italian American II', seats: 8, id: 4, time: '6:00-9:00 PM', description: 'Sausage Stuffed Mushrooms • Panzanella Salad • Homemade Pappardelle Alla Vodka • Chocolate Amaretto Soufflé' },
+        
+        // Classic Italian American III - 10/10/25 7:00-10:00, 11/15 6:00-9:00
+        { date: '2025-10-10', class: 'Classic Italian American III', seats: 8, id: 5, time: '7:00-10:00 PM', description: 'Pasta Fagioli Soup • Chicken Francese • Mushroom Risotto • Fried Sicilian Zeppole' },
+        { date: '2025-11-15', class: 'Classic Italian American III', seats: 8, id: 6, time: '6:00-9:00 PM', description: 'Pasta Fagioli Soup • Chicken Francese • Mushroom Risotto • Fried Sicilian Zeppole' },
+        
+        // Pasta Sauces - 10/18/25 6:00-9:00, 11/7/25 6:00-9:00
+        { date: '2025-10-18', class: 'Pasta Sauces', seats: 8, id: 7, time: '6:00-9:00 PM', description: 'Marinara • Amatriciana • Broccoli Aglio Olio • Lemon Alfredo • Tiramisu' },
+        { date: '2025-11-07', class: 'Pasta Sauces', seats: 8, id: 8, time: '6:00-9:00 PM', description: 'Marinara • Amatriciana • Broccoli Aglio Olio • Lemon Alfredo • Tiramisu' },
+        
+        // Fresh Scratch Pasta - 9/26/25 6:00-9:00, 11/22/25 6:00-9:00
+        { date: '2025-09-26', class: 'Fresh Scratch Pasta', seats: 8, id: 9, time: '6:00-9:00 PM', description: 'Gnocchi • Fettucine • Pappardelle • Tortellini • Fresh Pomodoro Sauce • Cannoli' },
+        { date: '2025-11-22', class: 'Fresh Scratch Pasta', seats: 8, id: 10, time: '6:00-9:00 PM', description: 'Gnocchi • Fettucine • Pappardelle • Tortellini • Fresh Pomodoro Sauce • Cannoli' },
+        
+        // Thanksgiving Sides - 11/14/25 7:00-10:00, 11/21 7:00-9:00
+        { date: '2025-11-14', class: 'Thanksgiving Sides', seats: 8, id: 11, time: '7:00-10:00 PM', description: 'Mascarpone Chive Mashed Potatoes • Bacon Balsamic Brussel Sprouts • Parker House Rolls • Butternut Squash Pecan Tarts • Amaretto Seared Mushrooms' },
+        { date: '2025-11-21', class: 'Thanksgiving Sides', seats: 8, id: 12, time: '7:00-9:00 PM', description: 'Mascarpone Chive Mashed Potatoes • Bacon Balsamic Brussel Sprouts • Parker House Rolls • Butternut Squash Pecan Tarts • Amaretto Seared Mushrooms' },
+        
+        // Holiday Appetizers - 12/5/25 7:00-10:00, 12/13/25 7:00-10:00
+        { date: '2025-12-05', class: 'Holiday Appetizers', seats: 8, id: 13, time: '7:00-10:00 PM', description: 'Miniature Beef Wellingtons • Sausage Mascarpone Stuffed Mushrooms • Fresh Hummus and Parmesan Pita Chips • Miniature Arancini Rice Balls • Sausage Spinach Pie' },
+        { date: '2025-12-13', class: 'Holiday Appetizers', seats: 8, id: 14, time: '7:00-10:00 PM', description: 'Miniature Beef Wellingtons • Sausage Mascarpone Stuffed Mushrooms • Fresh Hummus and Parmesan Pita Chips • Miniature Arancini Rice Balls • Sausage Spinach Pie' },
+        
+        // Holiday Chocolate Desserts - 11/28/25 6:00-9:00, 12/6/25 6:00-9:00
+        { date: '2025-11-28', class: 'Holiday Chocolate Desserts', seats: 8, id: 15, time: '6:00-9:00 PM', description: 'Chocolate Cranberry Paté • Chocolate Truffles • Christmas Blondies • Chocolate Chip Cookie Stuffed Fudge Brownies' },
+        { date: '2025-12-06', class: 'Holiday Chocolate Desserts', seats: 8, id: 16, time: '6:00-9:00 PM', description: 'Chocolate Cranberry Paté • Chocolate Truffles • Christmas Blondies • Chocolate Chip Cookie Stuffed Fudge Brownies' },
+        
+        // Easy Breads - 9/27/25 1:00-4:00, 10/25/25 1:00-4:00, 12/12/25 7:00-10:00
+        { date: '2025-09-27', class: 'Easy Breads', seats: 8, id: 17, time: '1:00-4:00 PM', description: 'Focaccia • Rustic French Boule • Ciabatta • Brazilian Cheese Rolls • Homemade Butter' },
+        { date: '2025-10-25', class: 'Easy Breads', seats: 8, id: 18, time: '1:00-4:00 PM', description: 'Focaccia • Rustic French Boule • Ciabatta • Brazilian Cheese Rolls • Homemade Butter' },
+        { date: '2025-12-12', class: 'Easy Breads', seats: 8, id: 19, time: '7:00-10:00 PM', description: 'Focaccia • Rustic French Boule • Ciabatta • Brazilian Cheese Rolls • Homemade Butter' },
+        
+        // International Winter Soups - 10/24/25 7:00-10:00, 12/20/25 6:00-9:00
+        { date: '2025-10-24', class: 'International Winter Soups', seats: 8, id: 20, time: '7:00-10:00 PM', description: 'Chicken Matzoh Ball • Pasta Fagioli • Sopa De Pollo (Mexican Chicken Soup) • Hungarian Goulyas Soup • Beef Barley' },
+        { date: '2025-12-20', class: 'International Winter Soups', seats: 8, id: 21, time: '6:00-9:00 PM', description: 'Chicken Matzoh Ball • Pasta Fagioli • Sopa De Pollo (Mexican Chicken Soup) • Hungarian Goulyas Soup • Beef Barley' }
     ];
     
     // Save defaults to localStorage
@@ -800,7 +1088,8 @@ function saveClassesToStorage(classes) {
     localStorage.setItem('cottageClasses', JSON.stringify(classes));
     // Trigger calendar refresh if on main page
     if (document.getElementById('calendar')) {
-        initializeCalendar();
+        const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+        initializeCalendar(currentFilter);
     }
 }
 
@@ -808,7 +1097,8 @@ function saveClassesToStorage(classes) {
 window.addEventListener('storage', function(e) {
     if (e.key === 'cottageClasses' || e.key === 'cottageClassesAdmin') {
         console.log('📺 Admin updated classes - refreshing customer view...');
-        initializeCalendar();
+        const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+        initializeCalendar(currentFilter);
         
         // Show update notification to user
         showUpdateNotification();
@@ -869,7 +1159,8 @@ function triggerCalendarUpdate() {
     setTimeout(() => {
         if (document.getElementById('calendar')) {
             console.log('🔄 Triggering real-time calendar update...');
-            initializeCalendar();
+            const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+        initializeCalendar(currentFilter);
         }
     }, 50);
     
@@ -884,9 +1175,48 @@ function triggerCalendarUpdate() {
 window.addEventListener('classesUpdated', function() {
     if (document.getElementById('calendar')) {
         console.log('🔄 Classes updated event received - refreshing...');
-        initializeCalendar();
+        const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+        initializeCalendar(currentFilter);
     }
 });
+
+// Force refresh calendar with new 2025 schedule
+function refreshCalendarWithNewSchedule() {
+    // Clear ALL existing calendar data to force reload
+    localStorage.removeItem('cottageClasses');
+    localStorage.removeItem('cottageClassesAdmin');
+    localStorage.removeItem('lastUpdate');
+    
+    // Force reload of new schedule - this will load all 21 classes
+    const newClasses = getClassesFromStorage();
+    console.log('🔄 Calendar refreshed with complete 2025 schedule:', newClasses.length, 'classes');
+    console.log('📋 Class types:', newClasses.map(c => c.class).filter((v, i, a) => a.indexOf(v) === i));
+    
+    // Trigger immediate update
+    const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+    initializeCalendar(currentFilter);
+    
+    // Show update notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #7a9a4d;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        z-index: 1001;
+        font-size: 0.9rem;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    `;
+    notification.innerHTML = `🗓️ Calendar Updated! All ${newClasses.length} classes loaded. Click any class for details!`;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.remove(), 4000);
+}
 
 // Auto-refresh calendar every 30 seconds to stay in sync
 setInterval(() => {
@@ -896,11 +1226,20 @@ setInterval(() => {
             const timeSince = Date.now() - parseInt(lastUpdate);
             if (timeSince < 30000) { // If updated within last 30 seconds
                 console.log('🔄 Auto-refreshing calendar for recent updates...');
-                initializeCalendar();
+                const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+        initializeCalendar(currentFilter);
             }
         }
     }
 }, 30000);
+
+// Initialize calendar with new schedule on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Force refresh with new schedule
+    setTimeout(() => {
+        refreshCalendarWithNewSchedule();
+    }, 500);
+});
 
 // Handle booking form submission
 function handleBookingSubmission() {
@@ -1039,7 +1378,8 @@ function handleBookingSubmission() {
     } else {
         alert('❌ Sorry, not enough seats available for this class. Please try a different date or fewer seats.\n\n🔄 Check the calendar below for updated availability!');
         // Refresh calendar to show current availability
-        initializeCalendar();
+        const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+        initializeCalendar(currentFilter);
     }
     
     // In a real application, this would also send data to a backend server
@@ -1091,6 +1431,17 @@ const AdminPanel = {
 // Helper functions
 function getClassNameFromValue(value) {
     const mapping = {
+        'classic-italian-1': 'classic italian american',
+        'classic-italian-2': 'classic italian american',
+        'classic-italian-3': 'classic italian american',
+        'pasta-sauces': 'pasta sauces',
+        'fresh-pasta': 'fresh scratch pasta',
+        'thanksgiving': 'thanksgiving sides',
+        'holiday-appetizers': 'holiday appetizers',
+        'holiday-desserts': 'holiday chocolate desserts',
+        'easy-breads': 'easy breads',
+        'winter-soups': 'international winter soups',
+        // Legacy mappings for backward compatibility
         'bread': 'bread making',
         'farm-to-table': 'farm-to-table',
         'desserts': 'desserts'
@@ -1100,6 +1451,17 @@ function getClassNameFromValue(value) {
 
 function getFullClassName(value) {
     const mapping = {
+        'classic-italian-1': 'Classic Italian American I',
+        'classic-italian-2': 'Classic Italian American II',
+        'classic-italian-3': 'Classic Italian American III',
+        'pasta-sauces': 'Pasta Sauces',
+        'fresh-pasta': 'Fresh Scratch Pasta',
+        'thanksgiving': 'Thanksgiving Sides',
+        'holiday-appetizers': 'Holiday Appetizers',
+        'holiday-desserts': 'Holiday Chocolate Desserts',
+        'easy-breads': 'Easy Breads',
+        'winter-soups': 'International Winter Soups',
+        // Legacy mappings for backward compatibility
         'bread': 'Artisan Bread Making',
         'farm-to-table': 'Farm-to-Table Cooking',
         'desserts': 'Classic Desserts'
@@ -2294,6 +2656,106 @@ window.toggleFullscreen = toggleFullscreen;
 window.shareVideo = shareVideo;
 window.downloadVideo = downloadVideo;
 window.closeShareModal = closeShareModal;
+
+// Export calendar functions for global access
+window.showClassDetails = showClassDetails;
+window.closeClassDetails = closeClassDetails;
+window.bookThisClass = bookThisClass;
+
+// =====================================================================
+// EMBEDDED ADMIN LOGIN FUNCTIONALITY
+// =====================================================================
+
+// Show admin login modal
+function showAdminLogin() {
+    const modal = document.getElementById('adminLoginModal');
+    modal.classList.remove('admin-login-hidden');
+    
+    // Clear form
+    document.getElementById('adminUsername').value = '';
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('adminLoginMessage').textContent = '';
+    
+    // Focus on username field
+    setTimeout(() => {
+        document.getElementById('adminUsername').focus();
+    }, 100);
+}
+
+// Hide admin login modal
+function hideAdminLogin() {
+    const modal = document.getElementById('adminLoginModal');
+    modal.classList.add('admin-login-hidden');
+    
+    // Clear form
+    document.getElementById('adminUsername').value = '';
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('adminLoginMessage').textContent = '';
+}
+
+// Handle admin login
+function handleAdminLogin(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('adminUsername').value;
+    const password = document.getElementById('adminPassword').value;
+    const messageDiv = document.getElementById('adminLoginMessage');
+    
+    // Admin credentials (in a real app, this would be server-side)
+    const validCredentials = {
+        'admin': 'cottage2025'
+    };
+    
+    if (validCredentials[username] && validCredentials[username] === password) {
+        // Set admin session
+        sessionStorage.setItem('adminLoggedIn', 'true');
+        sessionStorage.setItem('loginTime', Date.now().toString());
+        sessionStorage.setItem('adminUser', username);
+        
+        messageDiv.style.color = '#28a745';
+        messageDiv.textContent = '✅ Login successful! Redirecting...';
+        
+        // Show success notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            z-index: 1001;
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        `;
+        notification.textContent = `🔧 Welcome ${username}! Opening admin panel...`;
+        document.body.appendChild(notification);
+        
+        // Redirect to admin panel after delay
+        setTimeout(() => {
+            window.location.href = 'admin.html';
+        }, 1500);
+        
+    } else {
+        messageDiv.style.color = '#dc3545';
+        messageDiv.textContent = '❌ Invalid credentials. Please try again.';
+        
+        // Clear password field
+        document.getElementById('adminPassword').value = '';
+        
+        // Clear error message after 3 seconds
+        setTimeout(() => {
+            messageDiv.textContent = '';
+        }, 3000);
+    }
+}
+
+// Export admin functions for global access
+window.showAdminLogin = showAdminLogin;
+window.hideAdminLogin = hideAdminLogin;
+window.handleAdminLogin = handleAdminLogin;
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { AdminPanel };

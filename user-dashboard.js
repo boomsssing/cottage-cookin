@@ -249,7 +249,7 @@ class UserDashboard {
                             <span class="message-sender">Chef Brian</span>
                             <span class="message-time">Welcome!</span>
                         </div>
-                        <div class="message-text">Welcome to Cottage Cooking! I'm excited to help you on your culinary journey. Feel free to ask me any questions about our classes!</div>
+                        <div class="message-text">Join us for a cooking class that features both technique and hands on learning when possible. I'm excited to help you on your culinary journey. Feel free to ask me any questions about our classes!</div>
                     </div>
                 </div>
             `;

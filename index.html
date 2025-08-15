@@ -37,7 +37,7 @@
         <!-- Hero Section -->
         <section id="home" class="hero">
             <div class="hero-content">
-                <h1>Welcome to Cottage Cooking Classes</h1>
+                <h1>Join us for a cooking class that features both technique and hands on learning when possible</h1>
                 <p>Learn the art of home cooking in a warm, intimate setting. Join us for hands-on cooking experiences that celebrate fresh, seasonal ingredients and traditional techniques.</p>
                 <button class="cta-button" onclick="scrollToSection('calendar')">Book a Class</button>
             </div>
@@ -52,31 +52,198 @@
                 <h2>Our Cooking Classes</h2>
                 <div class="classes-grid">
                     <div class="class-card">
-                        <div class="class-image">🍞</div>
-                        <h3>Artisan Bread Making</h3>
-                        <p>Learn to create rustic, handcrafted breads using traditional techniques and natural ingredients.</p>
+                        <div class="class-image">🌍</div>
+                        <h3>International Cuisine</h3>
+                        <p>Explore flavors from around the world with authentic recipes and techniques from diverse culinary traditions.</p>
                         <div class="class-info">
                             <span class="duration">3 hours</span>
                             <span class="price">$85</span>
                         </div>
                     </div>
                     <div class="class-card">
-                        <div class="class-image">🥗</div>
-                        <h3>Farm-to-Table Cooking</h3>
-                        <p>Discover how to create delicious meals using fresh, locally-sourced seasonal ingredients.</p>
+                        <div class="class-image">🍝</div>
+                        <h3>Italian Pasta and Sauces</h3>
+                        <p>Master the art of fresh pasta making and learn to create authentic Italian sauces from scratch.</p>
+                        <div class="class-info">
+                            <span class="duration">3 hours</span>
+                            <span class="price">$85</span>
+                        </div>
+                    </div>
+                    <div class="class-card">
+                        <div class="class-image">🎄</div>
+                        <h3>Holiday Cooking</h3>
+                        <p>Create memorable holiday dishes and special occasion meals that bring families together.</p>
+                        <div class="class-info">
+                            <span class="duration">3 hours</span>
+                            <span class="price">$85</span>
+                        </div>
+                    </div>
+                    <div class="class-card">
+                        <div class="class-image">🧀</div>
+                        <h3>Appetizers</h3>
+                        <p>Learn to create elegant appetizers and small plates perfect for entertaining and special occasions.</p>
                         <div class="class-info">
                             <span class="duration">2.5 hours</span>
-                            <span class="price">$75</span>
+                            <span class="price">$85</span>
                         </div>
                     </div>
                     <div class="class-card">
                         <div class="class-image">🍰</div>
-                        <h3>Classic Desserts</h3>
-                        <p>Master the art of traditional dessert making, from pies to cakes to delicate pastries.</p>
+                        <h3>Desserts</h3>
+                        <p>Master sweet endings with classic and contemporary dessert techniques, from chocolate to pastries.</p>
                         <div class="class-info">
-                            <span class="duration">3.5 hours</span>
-                            <span class="price">$95</span>
+                            <span class="duration">3 hours</span>
+                            <span class="price">$85</span>
                         </div>
+                    </div>
+                    <div class="class-card">
+                        <div class="class-image">🍞</div>
+                        <h3>Bread</h3>
+                        <p>Discover the art of bread making, from rustic sourdoughs to artisan loaves using traditional methods.</p>
+                        <div class="class-info">
+                            <span class="duration">3 hours</span>
+                            <span class="price">$85</span>
+                        </div>
+                    </div>
+                    <div class="class-card">
+                        <div class="class-image">🧁</div>
+                        <h3>Baking</h3>
+                        <p>Perfect your baking skills with cakes, cookies, pastries, and other sweet and savory baked goods.</p>
+                        <div class="class-info">
+                            <span class="duration">3 hours</span>
+                            <span class="price">$85</span>
+                        </div>
+                    </div>
+                    <div class="class-card">
+                        <div class="class-image">🍂</div>
+                        <h3>Seasonal</h3>
+                        <p>Cook with the seasons, featuring fresh ingredients and recipes that celebrate each time of year.</p>
+                        <div class="class-info">
+                            <span class="duration">2.5 hours</span>
+                            <span class="price">$85</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendar & Booking Section -->
+        <section id="calendar" class="calendar-section">
+            <div class="container">
+                <h2>📅 Available Classes</h2>
+                <p class="section-intro">Book your seat today! Classes update in real-time.</p>
+
+                <div class="booking-container">
+                    <div class="calendar-widget">
+
+                        <h3>Available Classes</h3>
+                        
+                        <!-- Category Filter -->
+                        <div class="category-filter">
+                            <label for="categoryFilter">Filter by Category:</label>
+                            <select id="categoryFilter" onchange="filterCalendarByCategory()">
+                                <option value="all">All Categories</option>
+                                <option value="international">🌍 International Cuisine</option>
+                                <option value="italian">🍝 Italian Pasta and Sauces</option>
+                                <option value="holiday">🎄 Holiday Cooking</option>
+                                <option value="appetizers">🧀 Appetizers</option>
+                                <option value="desserts">🍰 Desserts</option>
+                                <option value="bread">🍞 Bread</option>
+                                <option value="baking">🧁 Baking</option>
+                                <option value="seasonal">🍂 Seasonal</option>
+                            </select>
+                        </div>
+                        
+                        <div class="calendar" id="calendar"></div>
+                    </div>
+                    <div class="booking-form">
+                        <h3>Reserve Your Seat</h3>
+                        <form id="bookingForm">
+                            <div class="form-group">
+                                <label for="className">Select Class:</label>
+                                <select id="className" required>
+                                    <option value="">Choose a class...</option>
+                                    <optgroup label="🌍 International Cuisine">
+                                        <option value="winter-soups">International Winter Soups - $85</option>
+                                        <option value="asian-fundamentals">Asian Fundamentals - $85</option>
+                                        <option value="mediterranean">Mediterranean Classics - $85</option>
+                                        <option value="french-techniques">French Techniques - $85</option>
+                                    </optgroup>
+                                    <optgroup label="🍝 Italian Pasta and Sauces">
+                                        <option value="classic-italian-1">Classic Italian American I - $85</option>
+                                        <option value="classic-italian-2">Classic Italian American II - $85</option>
+                                        <option value="classic-italian-3">Classic Italian American III - $85</option>
+                                        <option value="pasta-sauces">Pasta Sauces - $85</option>
+                                        <option value="fresh-pasta">Fresh Scratch Pasta - $85</option>
+                                    </optgroup>
+                                    <optgroup label="🎄 Holiday Cooking">
+                                        <option value="thanksgiving">Thanksgiving Sides - $85</option>
+                                        <option value="christmas-dinner">Christmas Dinner - $85</option>
+                                        <option value="easter-brunch">Easter Brunch - $85</option>
+                                        <option value="new-years">New Year's Eve Entertaining - $85</option>
+                                    </optgroup>
+                                    <optgroup label="🧀 Appetizers">
+                                        <option value="holiday-appetizers">Holiday Appetizers - $85</option>
+                                        <option value="cheese-charcuterie">Cheese & Charcuterie - $85</option>
+                                        <option value="elegant-starters">Elegant Starters - $85</option>
+                                        <option value="party-favorites">Party Favorites - $85</option>
+                                    </optgroup>
+                                    <optgroup label="🍰 Desserts">
+                                        <option value="holiday-desserts">Holiday Chocolate Desserts - $85</option>
+                                        <option value="classic-cakes">Classic Cakes & Frostings - $85</option>
+                                        <option value="fruit-desserts">Fruit Desserts - $85</option>
+                                        <option value="elegant-plated">Elegant Plated Desserts - $85</option>
+                                    </optgroup>
+                                    <optgroup label="🍞 Bread">
+                                        <option value="easy-breads">Easy Breads - $85</option>
+                                        <option value="sourdough">Sourdough Mastery - $85</option>
+                                        <option value="artisan-breads">Artisan Breads - $85</option>
+                                    </optgroup>
+                                    <optgroup label="🧁 Baking">
+                                        <option value="cookies-bars">Cookies & Bars - $85</option>
+                                        <option value="pastries">Pastries & Tarts - $85</option>
+                                        <option value="savory-baking">Savory Baking - $85</option>
+                                    </optgroup>
+                                    <optgroup label="🍂 Seasonal">
+                                        <option value="spring-flavors">Spring Flavors - $85</option>
+                                        <option value="summer-grilling">Summer Grilling - $85</option>
+                                        <option value="fall-harvest">Fall Harvest - $85</option>
+                                        <option value="winter-comfort">Winter Comfort Foods - $85</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="classDate">Date:</label>
+                                <input type="date" id="classDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="seats">Number of Seats:</label>
+                                <select id="seats" required>
+                                    <option value="">Select...</option>
+                                    <option value="1">1 seat</option>
+                                    <option value="2">2 seats</option>
+                                    <option value="3">3 seats</option>
+                                    <option value="4">4 seats</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="name">Your Name:</label>
+                                <input type="text" id="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number:</label>
+                                <input type="tel" id="phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="dietary">Dietary Restrictions (optional):</label>
+                                <textarea id="dietary" rows="3" placeholder="Please let us know about any allergies or dietary preferences..."></textarea>
+                            </div>
+                            <button type="submit" class="submit-button">Reserve My Seat</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -217,11 +384,12 @@
                     <h3>Culinary Creations</h3>
                     <div class="gallery-tabs">
                         <button class="tab-btn active" onclick="showCategory('all')">All</button>
-                        <button class="tab-btn" onclick="showCategory('pasta')">Pasta & Italian</button>
+                        <button class="tab-btn" onclick="showCategory('pasta')">Italian Pasta & Sauces</button>
                         <button class="tab-btn" onclick="showCategory('desserts')">Desserts</button>
-                        <button class="tab-btn" onclick="showCategory('bread')">Breads & Baking</button>
-                        <button class="tab-btn" onclick="showCategory('entrees')">Main Courses</button>
+                        <button class="tab-btn" onclick="showCategory('bread')">Bread & Baking</button>
                         <button class="tab-btn" onclick="showCategory('appetizers')">Appetizers</button>
+                        <button class="tab-btn" onclick="showCategory('international')">International</button>
+                        <button class="tab-btn" onclick="showCategory('seasonal')">Seasonal</button>
                     </div>
                     
                     <div class="photo-grid" id="photoGrid">
@@ -269,93 +437,98 @@
             </div>
         </div>
 
-        <!-- Calendar & Booking Section -->
-        <section id="calendar" class="calendar-section">
-            <div class="container">
-                <h2>Book Your Class</h2>
-                <div class="booking-container">
-                    <div class="calendar-widget">
-                        <h3>Available Classes</h3>
-                        <div class="calendar" id="calendar"></div>
-                    </div>
-                    <div class="booking-form">
-                        <h3>Reserve Your Seat</h3>
-                        <form id="bookingForm">
-                            <div class="form-group">
-                                <label for="className">Select Class:</label>
-                                <select id="className" required>
-                                    <option value="">Choose a class...</option>
-                                    <option value="bread">Artisan Bread Making - $85</option>
-                                    <option value="farm-to-table">Farm-to-Table Cooking - $75</option>
-                                    <option value="desserts">Classic Desserts - $95</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="classDate">Date:</label>
-                                <input type="date" id="classDate" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="seats">Number of Seats:</label>
-                                <select id="seats" required>
-                                    <option value="">Select...</option>
-                                    <option value="1">1 seat</option>
-                                    <option value="2">2 seats</option>
-                                    <option value="3">3 seats</option>
-                                    <option value="4">4 seats</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="name">Your Name:</label>
-                                <input type="text" id="name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="email">Email:</label>
-                                <input type="email" id="email" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="phone">Phone Number:</label>
-                                <input type="tel" id="phone" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="dietary">Dietary Restrictions (optional):</label>
-                                <textarea id="dietary" rows="3" placeholder="Please let us know about any allergies or dietary preferences..."></textarea>
-                            </div>
-                            <button type="submit" class="submit-button">Reserve My Seat</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </section>
+
 
         <!-- About Section -->
         <section id="about" class="about-section">
             <div class="container">
-                <h2>About Chef Brian Averna</h2>
-                <div class="about-content">
-                    <div class="about-text">
-                        <p><strong>Brian Averna is a nationally renowned culinarian and food innovation expert</strong> having worked in many segments of the food industry ranging from culinary, sales, R&D, marketing and media.</p>
+                <div class="about-header">
+                    <h2>Meet Chef Brian Averna</h2>
+                    <p class="about-subtitle">Nationally Renowned Culinary Expert & Food Innovation Pioneer</p>
+                </div>
+                
+                <div class="about-main">
+                    <div class="chef-profile">
+                        <div class="chef-image-container">
+                            <img src="IMG_8716 (1).jpeg" alt="Chef Brian Averna" class="chef-image-modern" />
+                            <div class="image-overlay">
+                                <div class="chef-title">Executive Chef</div>
+                                <div class="chef-subtitle">Culinary Institute of America</div>
+                            </div>
+                        </div>
                         
-                        <p>As <strong>Sara Lee's Senior Executive Chef</strong>, Brian appeared on several national media outlets which included The Tony Danza Show, Rachael Ray, Paula Dean's Paula's Party, ESPN, MSNBC, NPR, ABC, CBS, Marketplace, and Fox and Friends. He's appeared on <strong>The Today Show several times</strong> over the years.</p>
-                        
-                        <p>In 2005, Brian was <strong>the architect of the World's Largest Birthday Cake weighing in at 132,000 pounds</strong> celebrating Las Vegas' 100th birthday - a remarkable achievement showcasing his expertise in large-scale culinary production.</p>
-                        
-                        <p>Brian has constructed dozens of food innovations which have been served at some of America's largest food chains, C-Stores and CPG outlets. These include <strong>Sam's Club, 7-11, IHOP, Kwik Trip, Burger King, Waffle House, Mohegan Sun, Dunkin', Panera, Costco, Sonic, Firehouse Subs, Subway, Quizno's, Palermo's Pizza, Wienerschnitzel, Pret A Manger</strong> and more.</p>
-                        
-                        <p>His education at <strong>The Culinary Institute of America</strong> along with his extensive food travels have provided him with the tools to be inventive while keeping his finger on the pulse of America's palates.</p>
-                        
-                        <p>After retiring from full time work, Brian has been teaching eager foodies at a few local Connecticut cooking institutions. Today, Brian has opened his own cooking studio; <strong>Cottage Cooking in New Haven CT</strong>, where he shares his love of savory and baked goods with his students of all ages.</p>
+                        <div class="chef-intro">
+                            <h3>A Culinary Journey of Excellence</h3>
+                            <p class="lead-text">Brian Averna is a nationally renowned culinarian and food innovation expert with decades of experience across culinary arts, R&D, marketing, and media.</p>
+                        </div>
                     </div>
-                    <div class="about-image">
-                        <img src="IMG_8716 (1).jpeg" alt="Chef Brian Averna" class="chef-image" />
-                        <div class="credentials">
-                            <h4>Professional Highlights</h4>
-                            <ul>
-                                <li>🏢 Former Senior Executive Chef at Sara Lee</li>
-                                <li>📺 Multiple TV appearances including Today Show</li>
-                                <li>🎂 World's Largest Birthday Cake architect (132,000 lbs)</li>
-                                <li>🎓 Culinary Institute of America graduate</li>
-                                <li>🍽️ Innovations served at major food chains nationwide</li>
-                            </ul>
+                    
+                    <div class="experience-grid">
+                        <div class="experience-card">
+                            <div class="card-icon">📺</div>
+                            <h4>Media & TV</h4>
+                            <p>As Sara Lee's Senior Executive Chef, Brian appeared on major networks including The Today Show, Rachael Ray, Paula Deen, ESPN, MSNBC, NPR, ABC, CBS, and Fox & Friends.</p>
+                        </div>
+                        
+                        <div class="experience-card highlight">
+                            <div class="card-icon">🎂</div>
+                            <h4>World Record Achievement</h4>
+                            <p>In 2005, Brian architected the World's Largest Birthday Cake weighing 132,000 pounds for Las Vegas' 100th birthday celebration.</p>
+                        </div>
+                        
+                        <div class="experience-card">
+                            <div class="card-icon">🍽️</div>
+                            <h4>Food Innovation</h4>
+                            <p>Created dozens of food innovations served at America's largest chains including Sam's Club, IHOP, Burger King, Dunkin', Panera, Costco, and many more.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="journey-section">
+                        <h3>From Corporate Innovation to Cottage Cooking</h3>
+                        <div class="journey-content">
+                            <div class="journey-text">
+                                <p>Brian's culinary foundation began at <strong>The Culinary Institute of America</strong>, where he mastered classical techniques and developed his deep understanding of flavor profiles. His education was further enriched through extensive food travels across diverse culinary landscapes, from European kitchens to Asian markets, providing him with the expertise to innovate while staying connected to America's evolving palates.</p>
+                                
+                                <p>During his corporate years, Brian shaped the American food landscape through groundbreaking innovations at Sara Lee Corporation. His creations reached millions of consumers through major food chains nationwide, while his media appearances on shows like The Today Show, Rachael Ray, and Paula Deen brought his expertise into American homes. This unique combination of large-scale food production knowledge and intimate culinary artistry set him apart in the industry.</p>
+                                
+                                <p>After a distinguished corporate career spanning decades, Brian made a meaningful transition to teaching at local Connecticut cooking institutions, where he discovered his passion for sharing culinary knowledge with eager food enthusiasts. His teaching style combines professional techniques with accessible home cooking methods, making even complex dishes approachable for home cooks.</p>
+                                
+                                <p>Today, Brian has opened <strong>Cottage Cooking in New Haven, CT</strong> — an intimate, hands-on cooking studio where he shares his love of both savory and baked goods with students of all ages and skill levels. The studio represents the perfect marriage of his corporate innovation experience and his passion for traditional, home-style cooking, creating a unique learning environment where students can master both fundamental techniques and creative culinary expression.</p>
+                            </div>
+                            
+                            <div class="achievements-showcase">
+                                <h4>Professional Highlights</h4>
+                                <div class="achievements-grid">
+                                    <div class="achievement">
+                                        <div class="achievement-icon">🏢</div>
+                                        <div class="achievement-text">
+                                            <strong>Senior Executive Chef</strong><br>
+                                            Sara Lee Corporation
+                                        </div>
+                                    </div>
+                                    <div class="achievement">
+                                        <div class="achievement-icon">🎓</div>
+                                        <div class="achievement-text">
+                                            <strong>Graduate</strong><br>
+                                            Culinary Institute of America
+                                        </div>
+                                    </div>
+                                    <div class="achievement">
+                                        <div class="achievement-icon">📺</div>
+                                        <div class="achievement-text">
+                                            <strong>Multiple TV Appearances</strong><br>
+                                            Today Show, Rachael Ray & More
+                                        </div>
+                                    </div>
+                                    <div class="achievement">
+                                        <div class="achievement-icon">🌟</div>
+                                        <div class="achievement-text">
+                                            <strong>Food Innovations</strong><br>
+                                            Served Nationwide
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -526,8 +699,45 @@
     <footer>
         <div class="container">
             <p>&copy; 2025 Brian Averna Cottage Cooking. All rights reserved.</p>
+            
+            <!-- Admin Access Section -->
+            <div class="admin-access-section">
+                <div class="admin-toggle" onclick="showAdminLogin()">
+                    <span id="adminToggleText">🔧 Admin Access</span>
+                </div>
+            </div>
         </div>
     </footer>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="admin-modal-overlay admin-login-hidden">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <img src="80EEC885-72BE-48B4-8172-AD040AAE62E9.png" alt="Cottage Cooking Logo" class="admin-logo">
+                <h2>Admin Login</h2>
+                <p>Enter your credentials to access the admin panel</p>
+            </div>
+            
+            <form onsubmit="handleAdminLogin(event)" class="admin-login-form-modal">
+                <div class="admin-form-group">
+                    <label for="adminUsername">Username:</label>
+                    <input type="text" id="adminUsername" placeholder="Username" required>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label for="adminPassword">Password:</label>
+                    <input type="password" id="adminPassword" placeholder="Password" required>
+                </div>
+                
+                <button type="submit" class="admin-login-btn-modal">Login to Admin Panel</button>
+                <div id="adminLoginMessage" class="admin-message"></div>
+            </form>
+            
+            <div class="admin-back-link">
+                <a href="#" onclick="hideAdminLogin()">← Back to Website</a>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

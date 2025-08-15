@@ -434,7 +434,7 @@ class ChatManager {
         this.currentConversation = null;
         this.conversations = new Map();
         this.messageTemplates = {
-            welcome_standard: "Welcome to Cottage Cooking! We're excited to have you join our culinary community. Our hands-on cooking classes will help you develop your skills in a warm, intimate setting. We can't wait to cook with you!",
+            welcome_standard: "Join us for a cooking class that features both technique and hands on learning when possible. We're excited to have you join our culinary community. Our hands-on cooking classes will help you develop your skills in a warm, intimate setting. We can't wait to cook with you!",
             welcome_personal: "Hi [NAME]! I'm Chef Brian, and I personally wanted to welcome you to our cooking family. Having worked with major food chains and appeared on The Today Show, I'm passionate about sharing the joy of cooking with eager food enthusiasts like yourself. Looking forward to meeting you in the kitchen!",
             reminder_24h: "Just a friendly reminder that your [CLASS_NAME] class is tomorrow at [TIME]. We're looking forward to cooking with you! Please let us know if you have any last-minute questions.",
             reminder_1h: "Your [CLASS_NAME] class starts in 1 hour! We're excited to see you soon. The kitchen is ready and we can't wait to start cooking together!",
@@ -824,58 +824,48 @@ function getAdminClassesFromStorage() {
         return JSON.parse(stored);
     }
     
-    // Default admin classes if none stored
+    // 2025 Culinary Class Schedule - Admin Format - EXACT from client specification
     const defaultClasses = [
-        {
-            id: 1,
-            type: 'bread',
-            name: 'Artisan Bread Making',
-            date: '2025-02-14',
-            time: '10:00',
-            maxSeats: 6,
-            bookedSeats: 2,
-            price: 85
-        },
-        {
-            id: 2,
-            type: 'farm-to-table',
-            name: 'Farm-to-Table Cooking',
-            date: '2025-02-17',
-            time: '14:00',
-            maxSeats: 8,
-            bookedSeats: 2,
-            price: 75
-        },
-        {
-            id: 3,
-            type: 'desserts',
-            name: 'Classic Desserts',
-            date: '2025-02-21',
-            time: '11:00',
-            maxSeats: 6,
-            bookedSeats: 3,
-            price: 95
-        },
-        {
-            id: 4,
-            type: 'bread',
-            name: 'Artisan Bread Making',
-            date: '2025-02-24',
-            time: '10:00',
-            maxSeats: 6,
-            bookedSeats: 1,
-            price: 85
-        },
-        {
-            id: 5,
-            type: 'farm-to-table',
-            name: 'Farm-to-Table Cooking',
-            date: '2025-02-28',
-            time: '14:00',
-            maxSeats: 8,
-            bookedSeats: 6,
-            price: 75
-        }
+        // Classic Italian American I - 9/20/25 6:00-9:00, 11/1/25 6:00-9:00
+        { id: 1, type: 'classic-italian-1', name: 'Classic Italian American I', date: '2025-09-20', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 125, description: 'Sicilian Orange Salad • Three Cheese Garlic Bread • Tuscan White Bean Spread • Spaghetti with Fresh Pomodoro Sauce • Zabaglione' },
+        { id: 2, type: 'classic-italian-1', name: 'Classic Italian American I', date: '2025-11-01', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 125, description: 'Sicilian Orange Salad • Three Cheese Garlic Bread • Tuscan White Bean Spread • Spaghetti with Fresh Pomodoro Sauce • Zabaglione' },
+        
+        // Classic Italian American II - 10/4/25 6:00-9:00, 11/8/25 6:00-9:00
+        { id: 3, type: 'classic-italian-2', name: 'Classic Italian American II', date: '2025-10-04', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 135, description: 'Sausage Stuffed Mushrooms • Panzanella Salad • Homemade Pappardelle Alla Vodka • Chocolate Amaretto Soufflé' },
+        { id: 4, type: 'classic-italian-2', name: 'Classic Italian American II', date: '2025-11-08', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 135, description: 'Sausage Stuffed Mushrooms • Panzanella Salad • Homemade Pappardelle Alla Vodka • Chocolate Amaretto Soufflé' },
+        
+        // Classic Italian American III - 10/10/25 7:00-10:00, 11/15 6:00-9:00
+        { id: 5, type: 'classic-italian-3', name: 'Classic Italian American III', date: '2025-10-10', time: '7:00-10:00 PM', maxSeats: 8, bookedSeats: 0, price: 145, description: 'Pasta Fagioli Soup • Chicken Francese • Mushroom Risotto • Fried Sicilian Zeppole' },
+        { id: 6, type: 'classic-italian-3', name: 'Classic Italian American III', date: '2025-11-15', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 145, description: 'Pasta Fagioli Soup • Chicken Francese • Mushroom Risotto • Fried Sicilian Zeppole' },
+        
+        // Pasta Sauces - 10/18/25 6:00-9:00, 11/7/25 6:00-9:00
+        { id: 7, type: 'pasta-sauces', name: 'Pasta Sauces', date: '2025-10-18', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 95, description: 'Marinara • Amatriciana • Broccoli Aglio Olio • Lemon Alfredo • Tiramisu' },
+        { id: 8, type: 'pasta-sauces', name: 'Pasta Sauces', date: '2025-11-07', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 95, description: 'Marinara • Amatriciana • Broccoli Aglio Olio • Lemon Alfredo • Tiramisu' },
+        
+        // Fresh Scratch Pasta - 9/26/25 6:00-9:00, 11/22/25 6:00-9:00
+        { id: 9, type: 'fresh-pasta', name: 'Fresh Scratch Pasta', date: '2025-09-26', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 115, description: 'Gnocchi • Fettucine • Pappardelle • Tortellini • Fresh Pomodoro Sauce • Cannoli' },
+        { id: 10, type: 'fresh-pasta', name: 'Fresh Scratch Pasta', date: '2025-11-22', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 115, description: 'Gnocchi • Fettucine • Pappardelle • Tortellini • Fresh Pomodoro Sauce • Cannoli' },
+        
+        // Thanksgiving Sides - 11/14/25 7:00-10:00, 11/21 7:00-9:00
+        { id: 11, type: 'thanksgiving', name: 'Thanksgiving Sides', date: '2025-11-14', time: '7:00-10:00 PM', maxSeats: 8, bookedSeats: 0, price: 105, description: 'Mascarpone Chive Mashed Potatoes • Bacon Balsamic Brussel Sprouts • Parker House Rolls • Butternut Squash Pecan Tarts • Amaretto Seared Mushrooms' },
+        { id: 12, type: 'thanksgiving', name: 'Thanksgiving Sides', date: '2025-11-21', time: '7:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 105, description: 'Mascarpone Chive Mashed Potatoes • Bacon Balsamic Brussel Sprouts • Parker House Rolls • Butternut Squash Pecan Tarts • Amaretto Seared Mushrooms' },
+        
+        // Holiday Appetizers - 12/5/25 7:00-10:00, 12/13/25 7:00-10:00
+        { id: 13, type: 'holiday-appetizers', name: 'Holiday Appetizers', date: '2025-12-05', time: '7:00-10:00 PM', maxSeats: 8, bookedSeats: 0, price: 125, description: 'Miniature Beef Wellingtons • Sausage Mascarpone Stuffed Mushrooms • Fresh Hummus and Parmesan Pita Chips • Miniature Arancini Rice Balls • Sausage Spinach Pie' },
+        { id: 14, type: 'holiday-appetizers', name: 'Holiday Appetizers', date: '2025-12-13', time: '7:00-10:00 PM', maxSeats: 8, bookedSeats: 0, price: 125, description: 'Miniature Beef Wellingtons • Sausage Mascarpone Stuffed Mushrooms • Fresh Hummus and Parmesan Pita Chips • Miniature Arancini Rice Balls • Sausage Spinach Pie' },
+        
+        // Holiday Chocolate Desserts - 11/28/25 6:00-9:00, 12/6/25 6:00-9:00
+        { id: 15, type: 'holiday-desserts', name: 'Holiday Chocolate Desserts', date: '2025-11-28', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 85, description: 'Chocolate Cranberry Paté • Chocolate Truffles • Christmas Blondies • Chocolate Chip Cookie Stuffed Fudge Brownies' },
+        { id: 16, type: 'holiday-desserts', name: 'Holiday Chocolate Desserts', date: '2025-12-06', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 85, description: 'Chocolate Cranberry Paté • Chocolate Truffles • Christmas Blondies • Chocolate Chip Cookie Stuffed Fudge Brownies' },
+        
+        // Easy Breads - 9/27/25 1:00-4:00, 10/25/25 1:00-4:00, 12/12/25 7:00-10:00
+        { id: 17, type: 'easy-breads', name: 'Easy Breads', date: '2025-09-27', time: '1:00-4:00 PM', maxSeats: 8, bookedSeats: 0, price: 95, description: 'Focaccia • Rustic French Boule • Ciabatta • Brazilian Cheese Rolls • Homemade Butter' },
+        { id: 18, type: 'easy-breads', name: 'Easy Breads', date: '2025-10-25', time: '1:00-4:00 PM', maxSeats: 8, bookedSeats: 0, price: 95, description: 'Focaccia • Rustic French Boule • Ciabatta • Brazilian Cheese Rolls • Homemade Butter' },
+        { id: 19, type: 'easy-breads', name: 'Easy Breads', date: '2025-12-12', time: '7:00-10:00 PM', maxSeats: 8, bookedSeats: 0, price: 95, description: 'Focaccia • Rustic French Boule • Ciabatta • Brazilian Cheese Rolls • Homemade Butter' },
+        
+        // International Winter Soups - 10/24/25 7:00-10:00, 12/20/25 6:00-9:00
+        { id: 20, type: 'winter-soups', name: 'International Winter Soups', date: '2025-10-24', time: '7:00-10:00 PM', maxSeats: 8, bookedSeats: 0, price: 85, description: 'Chicken Matzoh Ball • Pasta Fagioli • Sopa De Pollo (Mexican Chicken Soup) • Hungarian Goulyas Soup • Beef Barley' },
+        { id: 21, type: 'winter-soups', name: 'International Winter Soups', date: '2025-12-20', time: '6:00-9:00 PM', maxSeats: 8, bookedSeats: 0, price: 85, description: 'Chicken Matzoh Ball • Pasta Fagioli • Sopa De Pollo (Mexican Chicken Soup) • Hungarian Goulyas Soup • Beef Barley' }
     ];
     
     saveAdminClassesToStorage(defaultClasses);
@@ -998,11 +988,18 @@ function handleAddClass(e) {
         return;
     }
     
-    // Get class name
+    // Get class name mapping for all new class types
     const classNames = {
-        'bread': 'Artisan Bread Making',
-        'farm-to-table': 'Farm-to-Table Cooking',
-        'desserts': 'Classic Desserts'
+        'classic-italian-1': 'Classic Italian American I',
+        'classic-italian-2': 'Classic Italian American II', 
+        'classic-italian-3': 'Classic Italian American III',
+        'pasta-sauces': 'Pasta Sauces',
+        'fresh-pasta': 'Fresh Scratch Pasta',
+        'thanksgiving': 'Thanksgiving Sides',
+        'holiday-appetizers': 'Holiday Appetizers',
+        'holiday-desserts': 'Holiday Chocolate Desserts',
+        'easy-breads': 'Easy Breads',
+        'winter-soups': 'International Winter Soups'
     };
     
     // Create new class object
@@ -1427,6 +1424,17 @@ function updateBookingsTable(bookings) {
 
 function getFullClassNameFromType(type) {
     const mapping = {
+        'classic-italian-1': 'Classic Italian American I',
+        'classic-italian-2': 'Classic Italian American II', 
+        'classic-italian-3': 'Classic Italian American III',
+        'pasta-sauces': 'Pasta Sauces',
+        'fresh-pasta': 'Fresh Scratch Pasta',
+        'thanksgiving': 'Thanksgiving Sides',
+        'holiday-appetizers': 'Holiday Appetizers',
+        'holiday-desserts': 'Holiday Chocolate Desserts',
+        'easy-breads': 'Easy Breads',
+        'winter-soups': 'International Winter Soups',
+        // Legacy mappings for backward compatibility
         'bread': 'Artisan Bread Making',
         'farm-to-table': 'Farm-to-Table Cooking', 
         'desserts': 'Classic Desserts'
@@ -1448,9 +1456,9 @@ function closeWelcomeTemplatesModal() {
 
 function selectWelcomeTemplate(templateType) {
     const templates = {
-        standard: "Welcome to Cottage Cooking! We're excited to have you join our culinary community. Our hands-on cooking classes will help you develop your skills in a warm, intimate setting. We can't wait to cook with you!",
+        standard: "Join us for a cooking class that features both technique and hands on learning when possible. We're excited to have you join our culinary community. Our hands-on cooking classes will help you develop your skills in a warm, intimate setting. We can't wait to cook with you!",
         personal: "Hi [NAME]! I'm Chef Brian, and I personally wanted to welcome you to our cooking family. Having worked with major food chains and appeared on The Today Show, I'm passionate about sharing the joy of cooking with eager food enthusiasts like yourself. Looking forward to meeting you in the kitchen!",
-        promotional: "Welcome to Cottage Cooking! As a new member, we're excited to offer you 10% off your first class. Use code WELCOME10 when booking. Join us for an unforgettable culinary experience where you'll learn traditional techniques using fresh, seasonal ingredients!"
+        promotional: "Join us for a cooking class that features both technique and hands on learning when possible. As a new member, we're excited to offer you 10% off your first class. Use code WELCOME10 when booking. Join us for an unforgettable culinary experience where you'll learn traditional techniques using fresh, seasonal ingredients!"
     };
 
     const users = JSON.parse(localStorage.getItem('users') || '[]');

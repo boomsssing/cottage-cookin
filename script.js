@@ -1963,13 +1963,7 @@ const foodGalleryData = [
         category: "entrees",
         src: "IMG_3632.jpg"
     },
-    {
-        id: 7,
-        title: "Chef Brian Teaching Moment",
-        description: "Chef Brian sharing culinary knowledge and techniques, demonstrating his passion for teaching cooking",
-        category: "appetizers",
-        src: "IMG_3633.jpg"
-    },
+
     {
         id: 8,
         title: "Layered Parfait or Trifle",
@@ -2156,9 +2150,9 @@ const foodGalleryData = [
     },
     {
         id: 36,
-        title: "Fresh Green Preparation",
-        description: "A vibrant dish featuring fresh greens and herbs, emphasizing the beauty of simple, quality ingredients",
-        category: "appetizers",
+        title: "Artisan Sourdough and Sesame Loaves",
+        description: "Beautiful handcrafted artisan bread loaves with traditional scoring patterns and sesame seed topping, cooling on professional racks",
+        category: "bread",
         src: "IMG_3663.jpg"
     },
     {

@@ -1,5 +1,44 @@
 // Admin Panel JavaScript - Enhanced with Real-time User Sync
 
+// Auto-hide Navbar on Scroll for Admin Dashboard
+let adminLastScrollTop = 0;
+let adminNavbar = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    adminNavbar = document.querySelector('.navbar');
+    let adminTicking = false;
+
+    function updateAdminNavbar() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Don't hide navbar at the very top of the page
+        if (scrollTop <= 100) {
+            adminNavbar.classList.remove('hidden');
+            adminNavbar.classList.add('visible');
+        } else if (scrollTop > adminLastScrollTop && scrollTop > 150) {
+            // Scrolling down - hide navbar
+            adminNavbar.classList.add('hidden');
+            adminNavbar.classList.remove('visible');
+        } else if (scrollTop < adminLastScrollTop) {
+            // Scrolling up - show navbar
+            adminNavbar.classList.remove('hidden');
+            adminNavbar.classList.add('visible');
+        }
+        
+        adminLastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
+        adminTicking = false;
+    }
+
+    function requestAdminTick() {
+        if (!adminTicking) {
+            requestAnimationFrame(updateAdminNavbar);
+            adminTicking = true;
+        }
+    }
+
+    window.addEventListener('scroll', requestAdminTick);
+});
+
 // Real-time notification system
 class AdminNotificationSystem {
     constructor() {
@@ -1405,6 +1444,19 @@ function updateBookingsTable(bookings) {
     tableBody.innerHTML = bookings.map(booking => {
         const date = new Date(booking.date).toLocaleDateString();
         const className = getFullClassNameFromType(booking.className);
+        
+        // Add payment status
+        let paymentStatus = '';
+        if (booking.payment) {
+            if (booking.payment.paymentStatus === 'completed') {
+                paymentStatus = '<br><span class="payment-status paid">✓ Paid $' + booking.payment.paymentAmount + '</span>';
+            } else if (booking.payment.paymentStatus === 'pending') {
+                paymentStatus = '<br><span class="payment-status pending">⏳ Payment Pending</span>';
+            }
+        } else if (booking.status === 'paid') {
+            paymentStatus = '<br><span class="payment-status paid">✓ Paid</span>';
+        }
+        
         return `
             <tr>
                 <td>${date}</td>
@@ -1412,7 +1464,7 @@ function updateBookingsTable(bookings) {
                 <td>${className}</td>
                 <td>${booking.seats}</td>
                 <td>${booking.email}<br/>${booking.phone}</td>
-                <td><span class="status ${booking.status}">${booking.status}</span></td>
+                <td><span class="status ${booking.status}">${booking.status}</span>${paymentStatus}</td>
                 <td>
                     <button class="action-btn" onclick="editBooking('${booking.id}')">Edit</button>
                     <button class="action-btn cancel" onclick="cancelBooking('${booking.id}')">Cancel</button>

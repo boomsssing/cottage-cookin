@@ -54,7 +54,7 @@ class AuthSystem {
         
         if (isLoggedIn) {
             const userData = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            this.updateNavForLoggedInUser(userData);
+            this.updateNavForLoggedInUser(userData); 
         } else {
             authLink.textContent = 'Sign In';
             authLink.onclick = () => this.openSignInModal();
@@ -665,6 +665,16 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             handleBookingSubmission();
         });
+        
+        // Add real-time payment summary updates
+        const seatsSelect = document.getElementById('seats');
+        if (seatsSelect) {
+            seatsSelect.addEventListener('change', function() {
+                const seats = parseInt(this.value) || 0;
+                const totalAmount = seats * 85;
+                updatePaymentSummary(seats, totalAmount);
+            });
+        }
     }
     
     // Initialize calendar
@@ -896,7 +906,7 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
             
             <div style="text-align: center; margin-top: 25px;">
                 ${seatsAvailable > 0 ? 
-                    `<button onclick="bookThisClass('${className}', '${date}')" style="
+                    `<button id="bookClassBtn" data-class="${className}" data-date="${date}" style="
                         background: #7a9a4d;
                         color: white;
                         border: none;
@@ -933,12 +943,36 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
                 " onmouseover="this.style.background='#d4dae1'" onmouseout="this.style.background='#e9ecef'">
                     Close
                 </button>
+
             </div>
         </div>
     `;
     
     document.body.appendChild(popup);
     document.body.style.overflow = 'hidden';
+    
+    // Add event listener to the book button
+    setTimeout(() => {
+        const bookButton = popup.querySelector('#bookClassBtn');
+        if (bookButton) {
+            bookButton.onclick = function() {
+                const classData = this.getAttribute('data-class');
+                const dateData = this.getAttribute('data-date');
+                
+                // Check if user is signed in
+                const isLoggedIn = localStorage.getItem('userLoggedIn');
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                
+                if (isLoggedIn && currentUser.email) {
+                    // User is signed in - show payment options
+                    showPaymentOptions(classData, dateData, currentUser);
+                } else {
+                    // User is not signed in - show sign-in prompt
+                    showSignInPrompt(classData, dateData);
+                }
+            };
+        }
+    }, 100);
     
     // Add fadeIn animation
     if (!document.getElementById('popupStyles')) {
@@ -963,7 +997,253 @@ function closeClassDetails() {
     }
 }
 
-// Book this specific class
+// Show sign-in prompt for non-logged in users
+function showSignInPrompt(className, date) {
+    closeClassDetails();
+    
+    const signInModal = document.createElement('div');
+    signInModal.id = 'signInPromptModal';
+    signInModal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    const formattedDate = new Date(date).toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    signInModal.innerHTML = `
+        <div style="
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            position: relative;
+        ">
+            <button onclick="closeSignInPrompt()" style="
+                position: absolute;
+                top: 15px;
+                right: 20px;
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: #666;
+                padding: 5px;
+            ">&times;</button>
+            
+            <div style="margin-bottom: 25px;">
+                <h2 style="color: #2c5530; margin-bottom: 10px; font-size: 1.5rem;">Sign In to Book</h2>
+                <p style="color: #666; margin-bottom: 5px;"><strong>${className}</strong></p>
+                <p style="color: #666; margin-bottom: 20px;">${formattedDate}</p>
+                <p style="color: #2c5530; font-weight: 600; font-size: 1.1rem;">Class Price: $85</p>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <p style="color: #666; margin-bottom: 20px;">
+                    Please sign in to your account to book this class. This allows us to:
+                </p>
+                <ul style="text-align: left; color: #666; margin-bottom: 20px; padding-left: 20px;">
+                    <li>Track your bookings in your dashboard</li>
+                    <li>Send you class reminders</li>
+                    <li>Manage your account easily</li>
+                    <li>Provide better customer service</li>
+                </ul>
+            </div>
+            
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="window.authSystem.openSignInModal(); closeSignInPrompt();" style="
+                    background: #7a9a4d;
+                    color: white;
+                    border: none;
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.background='#2c5530'" onmouseout="this.style.background='#7a9a4d'">
+                    🔐 Sign In
+                </button>
+                
+                <button onclick="window.authSystem.openSignUpModal(); closeSignInPrompt();" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.background='#545b62'" onmouseout="this.style.background='#6c757d'">
+                    📝 Create Account
+                </button>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <p style="color: #666; font-size: 0.9rem;">
+                    Don't worry - creating an account is quick and free!
+                </p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(signInModal);
+    document.body.style.overflow = 'hidden';
+}
+
+// Close sign-in prompt modal
+function closeSignInPrompt() {
+    const modal = document.getElementById('signInPromptModal');
+    if (modal) {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Show payment options modal
+function showPaymentOptions(className, date, currentUser) {
+    closeClassDetails();
+    
+    // Create payment options modal
+    const paymentModal = document.createElement('div');
+    paymentModal.id = 'paymentOptionsModal';
+    paymentModal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    const formattedDate = new Date(date).toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    paymentModal.innerHTML = `
+        <div style="
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            position: relative;
+        ">
+            <button onclick="closePaymentOptions()" style="
+                position: absolute;
+                top: 15px;
+                right: 20px;
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: #666;
+                padding: 5px;
+            ">&times;</button>
+            
+            <div style="margin-bottom: 25px;">
+                <h2 style="color: #2c5530; margin-bottom: 10px; font-size: 1.5rem;">Complete Your Booking</h2>
+                <p style="color: #666; margin-bottom: 5px;"><strong>${className}</strong></p>
+                <p style="color: #666; margin-bottom: 20px;">${formattedDate}</p>
+                <p style="color: #2c5530; font-weight: 600; font-size: 1.1rem;">Class Price: $85</p>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">
+                    Booking for: <strong>${currentUser.firstName} ${currentUser.lastName}</strong> (${currentUser.email})
+                </p>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <p style="color: #666; margin-bottom: 20px;">Please complete your payment using one of the options below:</p>
+                
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <a href="https://www.paypal.me/BrianAverna" target="_blank" onclick="trackPaymentAttempt('paypal', '${className}', '${date}', '${currentUser.email}')" style="
+                        background: #0070ba;
+                        color: white;
+                        text-decoration: none;
+                        padding: 15px 25px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        display: inline-block;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='#005ea6'" onmouseout="this.style.background='#0070ba'">
+                        💳 PayPal
+                    </a>
+                    
+                    <a href="https://venmo.com/u/Brian-Averna" target="_blank" onclick="trackPaymentAttempt('venmo', '${className}', '${date}', '${currentUser.email}')" style="
+                        background: #008cff;
+                        color: white;
+                        text-decoration: none;
+                        padding: 15px 25px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        display: inline-block;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='#0077cc'" onmouseout="this.style.background='#008cff'">
+                        📱 Venmo
+                    </a>
+                </div>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                    <strong>Important:</strong> After payment, please email brianwaverna@gmail.com with your name, 
+                    the class name, and date to confirm your booking. Your booking will be tracked in your dashboard.
+                </p>
+            </div>
+            
+            <button onclick="closePaymentOptions()" style="
+                background: #e9ecef;
+                color: #333;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='#d4dae1'" onmouseout="this.style.background='#e9ecef'">
+                Close
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(paymentModal);
+    document.body.style.overflow = 'hidden';
+}
+
+// Close payment options modal
+function closePaymentOptions() {
+    const modal = document.getElementById('paymentOptionsModal');
+    if (modal) {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Book this specific class (keeping for backward compatibility)
 function bookThisClass(className, date) {
     closeClassDetails();
     
@@ -1007,13 +1287,37 @@ function bookThisClass(className, date) {
                 form.style.transform = 'scale(1)';
             }, 2000);
             
+            // Set default seat selection
+            const seatsSelect = document.getElementById('seats');
+            if (seatsSelect) {
+                seatsSelect.value = '1';
+                // Trigger the change event to update payment summary
+                const event = new Event('change');
+                seatsSelect.dispatchEvent(event);
+            }
+            
             // Show helpful message
             const message = document.createElement('div');
-            message.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #7a9a4d; color: white; padding: 10px 15px; border-radius: 5px; z-index: 1001; font-size: 0.9rem;';
-            message.textContent = `✅ ${className} selected! Complete your booking below.`;
+            message.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #7a9a4d; color: white; padding: 10px 15px; border-radius: 5px; z-index: 1001; font-size: 0.9rem; max-width: 300px;';
+            message.innerHTML = `✅ <strong>${className}</strong> selected!<br/>Please fill in your details and click "Reserve My Seat" to continue.`;
             document.body.appendChild(message);
             
-            setTimeout(() => message.remove(), 3000);
+            setTimeout(() => message.remove(), 5000);
+            
+            // Focus on the first required field to guide the user
+            setTimeout(() => {
+                const nameInput = document.getElementById('name');
+                if (nameInput) {
+                    nameInput.focus();
+                    nameInput.style.borderColor = '#7a9a4d';
+                    nameInput.style.boxShadow = '0 0 5px rgba(122, 154, 77, 0.3)';
+                    
+                    setTimeout(() => {
+                        nameInput.style.borderColor = '';
+                        nameInput.style.boxShadow = '';
+                    }, 3000);
+                }
+            }, 500);
         }
     }
 }
@@ -1305,6 +1609,52 @@ function handleBookingSubmission() {
         alert('Please enter a valid email address.');
         return;
     }
+
+    // Calculate total amount
+    const totalAmount = parseInt(formData.seats) * 85;
+    
+    // Store booking data for PayPal processing
+    const bookingData = {
+        bookingId: Date.now(),
+        ...formData,
+        totalAmount: totalAmount
+    };
+    
+    // Store in session storage for PayPal integration
+    sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
+    
+    // Update payment summary
+    updatePaymentSummary(formData.seats, totalAmount);
+    
+    // Show PayPal button if not already shown
+    if (window.paypalIntegration) {
+        window.paypalIntegration.setupPayPalButtons();
+    }
+    
+    // Prevent form submission - let PayPal handle the payment
+    return false;
+}
+
+// Function to update payment summary
+function updatePaymentSummary(seats, totalAmount) {
+    const seatsElement = document.getElementById('paymentSeats');
+    const totalElement = document.getElementById('paymentTotal');
+    
+    if (seatsElement) {
+        seatsElement.textContent = seats;
+    }
+    
+    if (totalElement) {
+        totalElement.textContent = '$' + totalAmount.toFixed(2);
+    }
+}
+
+// Function to handle successful payment completion
+function handlePaymentSuccess(paymentData) {
+    const pendingBooking = sessionStorage.getItem('pendingBooking');
+    if (!pendingBooking) return;
+    
+    const bookingData = JSON.parse(pendingBooking);
     
     // REAL UPDATE: Update seat count in localStorage AND admin system
     const classes = getClassesFromStorage();
@@ -1313,40 +1663,48 @@ function handleBookingSubmission() {
     // Find matching class in customer storage
     const classToUpdate = classes.find(cls => {
         const clsDate = new Date(cls.date).toISOString().split('T')[0];
-        const formDate = new Date(formData.classDate).toISOString().split('T')[0];
-        return clsDate === formDate && cls.class.toLowerCase().includes(getClassNameFromValue(formData.className));
+        const formDate = new Date(bookingData.classDate).toISOString().split('T')[0];
+        return clsDate === formDate && cls.class.toLowerCase().includes(getClassNameFromValue(bookingData.className));
     });
     
     // Find matching class in admin storage
     const adminClassToUpdate = adminClasses.find(cls => {
         const clsDate = new Date(cls.date).toISOString().split('T')[0];
-        const formDate = new Date(formData.classDate).toISOString().split('T')[0];
-        return clsDate === formDate && cls.name.toLowerCase().includes(getClassNameFromValue(formData.className));
+        const formDate = new Date(bookingData.classDate).toISOString().split('T')[0];
+        return clsDate === formDate && cls.name.toLowerCase().includes(getClassNameFromValue(bookingData.className));
     });
     
-    if (classToUpdate && classToUpdate.seats >= parseInt(formData.seats)) {
+    if (classToUpdate && classToUpdate.seats >= parseInt(bookingData.seats)) {
         // Update customer storage
-        classToUpdate.seats -= parseInt(formData.seats);
+        classToUpdate.seats -= parseInt(bookingData.seats);
         
         // Update admin storage - increase booked seats
         if (adminClassToUpdate) {
-            adminClassToUpdate.bookedSeats += parseInt(formData.seats);
+            adminClassToUpdate.bookedSeats += parseInt(bookingData.seats);
             localStorage.setItem('cottageClassesAdmin', JSON.stringify(adminClasses));
         }
         
-        // Save booking record
+        // Save booking record with payment info
         const bookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
         const newBooking = {
-            id: Date.now(),
-            date: formData.classDate,
-            customerName: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            className: formData.className,
-            seats: parseInt(formData.seats),
-            dietary: formData.dietary,
-            status: 'confirmed',
-            bookingTime: new Date().toISOString()
+            id: bookingData.bookingId,
+            date: bookingData.classDate,
+            customerName: bookingData.name,
+            email: bookingData.email,
+            phone: bookingData.phone,
+            className: bookingData.className,
+            seats: parseInt(bookingData.seats),
+            dietary: bookingData.dietary,
+            status: 'paid',
+            bookingTime: new Date().toISOString(),
+            payment: {
+                paypalOrderId: paymentData.id,
+                paymentStatus: 'completed',
+                paymentAmount: paymentData.purchase_units[0].amount.value,
+                paymentDate: new Date().toISOString(),
+                payerId: paymentData.payer.payer_id,
+                payerEmail: paymentData.payer.email_address
+            }
         };
         bookings.push(newBooking);
         localStorage.setItem('cottageBookings', JSON.stringify(bookings));
@@ -1360,17 +1718,17 @@ function handleBookingSubmission() {
         
         // Add admin notification for real-time updates
         addAdminNotification({
-            type: 'booking',
+            type: 'payment',
             booking: newBooking,
-            message: `New booking from ${formData.name} for ${getFullClassName(formData.className)}`,
+            message: `Payment received from ${bookingData.name} for ${getFullClassName(bookingData.className)}`,
             timestamp: Date.now(),
             read: false
         });
 
         // Create user account if not logged in and doesn't exist
-        if (!isLoggedIn && formData.email) {
+        if (!isLoggedIn && bookingData.email) {
             const users = JSON.parse(localStorage.getItem('users') || '[]');
-            if (!users.find(u => u.email === formData.email)) {
+            if (!users.find(u => u.email === bookingData.email)) {
                 const tempPassword = generateTempPassword();
                 const newUser = {
                     firstName: formData.name.split(' ')[0],
@@ -1548,107 +1906,8 @@ function showAdminSection(sectionName) {
     }
 }
 
-// Load admin classes from localStorage
-function getAdminClassesFromStorage() {
-    const stored = localStorage.getItem('cottageClassesAdmin');
-    if (stored) {
-        return JSON.parse(stored);
-    }
-    
-    // Default admin classes if none stored
-    const defaultClasses = [
-        {
-            id: 1,
-            type: 'bread',
-            name: 'Artisan Bread Making',
-            date: '2025-02-14',
-            time: '10:00',
-            maxSeats: 6,
-            bookedSeats: 2,
-            price: 85
-        },
-        {
-            id: 2,
-            type: 'farm-to-table',
-            name: 'Farm-to-Table Cooking',
-            date: '2025-02-17',
-            time: '14:00',
-            maxSeats: 8,
-            bookedSeats: 2,
-            price: 75
-        },
-        {
-            id: 3,
-            type: 'desserts',
-            name: 'Classic Desserts',
-            date: '2025-02-21',
-            time: '11:00',
-            maxSeats: 6,
-            bookedSeats: 3,
-            price: 95
-        },
-        {
-            id: 4,
-            type: 'bread',
-            name: 'Artisan Bread Making',
-            date: '2025-02-24',
-            time: '10:00',
-            maxSeats: 6,
-            bookedSeats: 1,
-            price: 85
-        },
-        {
-            id: 5,
-            type: 'farm-to-table',
-            name: 'Farm-to-Table Cooking',
-            date: '2025-02-28',
-            time: '14:00',
-            maxSeats: 8,
-            bookedSeats: 6,
-            price: 75
-        }
-    ];
-    
-    saveAdminClassesToStorage(defaultClasses);
-    return defaultClasses;
-}
-
-function saveAdminClassesToStorage(adminClasses) {
-    // Save admin classes
-    localStorage.setItem('cottageClassesAdmin', JSON.stringify(adminClasses));
-    
-    // Update customer-facing storage immediately
-    const customerClasses = adminClasses
-        .filter(cls => new Date(cls.date) >= new Date())
-        .map(cls => ({
-            id: cls.id,
-            date: cls.date,
-            class: cls.name,
-            seats: cls.maxSeats - cls.bookedSeats
-        }));
-    
-    localStorage.setItem('cottageClasses', JSON.stringify(customerClasses));
-    
-    // Trigger calendar update for customer side
-    triggerCalendarUpdate();
-    
-    console.log('✅ Admin classes saved and synced to customer site!');
-}
-
-// Initialize admin panel
-function initializeAdminPanel() {
-    adminClasses = getAdminClassesFromStorage();
-    showAdminSection('dashboard');
-    setupAdminEventListeners();
-}
-
-function setupAdminEventListeners() {
-    // Add class form
-    const addClassForm = document.getElementById('addClassForm');
-    if (addClassForm) {
-        addClassForm.addEventListener('submit', handleAdminAddClass);
-    }
-}
+// Admin functions are now handled by admin.js
+// Removed duplicate functions to prevent conflicts
 
 // Handle adding new class
 function handleAdminAddClass(e) {
@@ -1850,63 +2109,11 @@ function formatAdminDate(dateString) {
     });
 }
 
-function getFullClassNameFromType(type) {
-    const mapping = {
-        'bread': 'Artisan Bread Making',
-        'farm-to-table': 'Farm-to-Table Cooking',
-        'desserts': 'Classic Desserts'
-    };
-    return mapping[type] || type;
-}
+// Admin functions are now handled by admin.js
+// Removed duplicate functions to prevent conflicts
 
-function showAdminMessage(text, type = 'info') {
-    // Remove existing messages
-    const existingMessages = document.querySelectorAll('.admin-message');
-    existingMessages.forEach(msg => msg.remove());
-    
-    // Create new message
-    const message = document.createElement('div');
-    message.className = `admin-message ${type}`;
-    message.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        z-index: 1001;
-        font-size: 0.9rem;
-        font-weight: bold;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    `;
-    message.textContent = text;
-    
-    document.body.appendChild(message);
-    
-    setTimeout(() => message.remove(), 4000);
-}
-
-// Initialize admin functionality when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    initializeAdminPanel();
-    setupAdminEventListeners();
-});
-
-// Listen for storage changes for real-time updates
-window.addEventListener('storage', function(e) {
-    if (e.key === 'cottageBookings') {
-        console.log('New booking detected in admin panel');
-        updateAdminDashboardStats();
-        showAdminMessage('New customer booking received!', 'success');
-    }
-});
-
-// Make admin functions globally available
-window.showAdminSection = showAdminSection;
-window.changeAdminMonth = changeAdminMonth;
-window.editAdminBooking = editAdminBooking;
-window.cancelAdminBooking = cancelAdminBooking;
+// Admin functionality is handled by admin.js
+// Removed duplicate initialization to prevent conflicts
 
 // Make user menu functions globally available
 window.toggleUserMenu = toggleUserMenu;
@@ -2682,6 +2889,80 @@ window.closeShareModal = closeShareModal;
 window.showClassDetails = showClassDetails;
 window.closeClassDetails = closeClassDetails;
 window.bookThisClass = bookThisClass;
+window.showPaymentOptions = showPaymentOptions;
+window.closePaymentOptions = closePaymentOptions;
+window.showSignInPrompt = showSignInPrompt;
+window.closeSignInPrompt = closeSignInPrompt;
+
+// Track payment attempts and create pending bookings
+function trackPaymentAttempt(paymentMethod, className, date, userEmail) {
+    // Create a pending booking
+    const pendingBooking = {
+        id: Date.now(),
+        className: className,
+        date: date,
+        userEmail: userEmail,
+        paymentMethod: paymentMethod,
+        status: 'pending_payment',
+        bookingTime: new Date().toISOString(),
+        paymentAttemptTime: new Date().toISOString()
+    };
+    
+    // Save to user's bookings
+    const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+    userBookings.push(pendingBooking);
+    localStorage.setItem('userBookings', JSON.stringify(userBookings));
+    
+    // Save to admin bookings
+    const adminBookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
+    adminBookings.push(pendingBooking);
+    localStorage.setItem('cottageBookings', JSON.stringify(adminBookings));
+    
+    // Add admin notification
+    const adminNotifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+    const notification = {
+        id: Date.now(),
+        type: 'payment_attempt',
+        title: 'Payment Attempt',
+        message: `${userEmail} attempted payment via ${paymentMethod} for ${className}`,
+        booking: pendingBooking,
+        timestamp: Date.now(),
+        read: false
+    };
+    adminNotifications.push(notification);
+    localStorage.setItem('adminNotifications', JSON.stringify(adminNotifications));
+    
+    // Show success message
+    const message = document.createElement('div');
+    message.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        z-index: 1001;
+        font-size: 0.9rem;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        max-width: 300px;
+    `;
+    message.innerHTML = `
+        ✅ Payment link opened!<br/>
+        <small>Your booking is being tracked. Don't forget to email us after payment.</small>
+    `;
+    document.body.appendChild(message);
+    
+    setTimeout(() => message.remove(), 5000);
+    
+    // Close the payment modal
+    closePaymentOptions();
+}
+
+window.trackPaymentAttempt = trackPaymentAttempt;
+
+
 
 // =====================================================================
 // EMBEDDED ADMIN LOGIN FUNCTIONALITY

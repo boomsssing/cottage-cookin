@@ -242,7 +242,40 @@
                                 <label for="dietary">Dietary Restrictions (optional):</label>
                                 <textarea id="dietary" rows="3" placeholder="Please let us know about any allergies or dietary preferences..."></textarea>
                             </div>
-                            <button type="submit" class="submit-button">Reserve My Seat</button>
+                            
+                            <!-- Payment Section -->
+                            <div class="payment-section">
+                                <h4>Payment Information</h4>
+                                <div class="payment-summary">
+                                    <div class="payment-row">
+                                        <span>Price per seat:</span>
+                                        <span>$85.00</span>
+                                    </div>
+                                    <div class="payment-row">
+                                        <span>Number of seats:</span>
+                                        <span id="paymentSeats">0</span>
+                                    </div>
+                                    <div class="payment-row total">
+                                        <span>Total Amount:</span>
+                                        <span id="paymentTotal">$0.00</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- PayPal Button Container -->
+                                <div id="paypal-button-container" style="margin-top: 20px;"></div>
+                                
+                                <!-- Payment Processing Indicator -->
+                                <div id="payment-processing" style="display: none; text-align: center; margin-top: 20px;">
+                                    <div class="processing-spinner"></div>
+                                    <p>Processing payment...</p>
+                                </div>
+                                
+                                <!-- Payment Messages -->
+                                <div id="payment-error-message" style="display: none; color: #dc3545; margin-top: 10px; padding: 10px; background: #f8d7da; border-radius: 5px;"></div>
+                                <div id="payment-cancel-message" style="display: none; color: #856404; margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px;"></div>
+                            </div>
+                            
+                            <button type="submit" class="submit-button" id="reserveButton">Reserve My Seat</button>
                         </form>
                     </div>
                 </div>
@@ -591,6 +624,9 @@
     <div id="signInModal" class="auth-modal">
         <div class="auth-modal-content">
             <span class="close-auth-modal" onclick="closeAuthModal()">&times;</span>
+            <div class="auth-logo">
+                <img src="80EEC885-72BE-48B4-8172-AD040AAE62E9.png" alt="Cottage Cooking" class="auth-logo-img">
+            </div>
             <h3>Sign In to Your Account</h3>
             <form id="signInForm">
                 <div class="auth-form-group">
@@ -616,6 +652,9 @@
     <div id="signUpModal" class="auth-modal">
         <div class="auth-modal-content">
             <span class="close-auth-modal" onclick="closeAuthModal()">&times;</span>
+            <div class="auth-logo">
+                <img src="80EEC885-72BE-48B4-8172-AD040AAE62E9.png" alt="Cottage Cooking" class="auth-logo-img">
+            </div>
             <h3>Create Your Account</h3>
             <form id="signUpForm">
                 <div class="auth-form-row">
@@ -763,5 +802,6 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="paypal-integration.js"></script>
 </body>
 </html>

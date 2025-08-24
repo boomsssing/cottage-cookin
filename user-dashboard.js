@@ -1,5 +1,44 @@
 // User Dashboard JavaScript - Real-time Data Management
 
+// Auto-hide Navbar on Scroll for User Dashboard
+let userLastScrollTop = 0;
+let userNavbar = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    userNavbar = document.querySelector('.navbar');
+    let userTicking = false;
+
+    function updateUserNavbar() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Don't hide navbar at the very top of the page
+        if (scrollTop <= 100) {
+            userNavbar.classList.remove('hidden');
+            userNavbar.classList.add('visible');
+        } else if (scrollTop > userLastScrollTop && scrollTop > 150) {
+            // Scrolling down - hide navbar
+            userNavbar.classList.add('hidden');
+            userNavbar.classList.remove('visible');
+        } else if (scrollTop < userLastScrollTop) {
+            // Scrolling up - show navbar
+            userNavbar.classList.remove('hidden');
+            userNavbar.classList.add('visible');
+        }
+        
+        userLastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
+        userTicking = false;
+    }
+
+    function requestUserTick() {
+        if (!userTicking) {
+            requestAnimationFrame(updateUserNavbar);
+            userTicking = true;
+        }
+    }
+
+    window.addEventListener('scroll', requestUserTick);
+});
+
 class UserDashboard {
     constructor() {
         this.currentUser = null;
@@ -161,7 +200,19 @@ class UserDashboard {
         });
 
         const statusClass = booking.status || 'confirmed';
-        const statusText = booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'Confirmed';
+        let statusText = booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'Confirmed';
+        
+        // Add payment status if available
+        let paymentStatus = '';
+        if (booking.payment) {
+            if (booking.payment.paymentStatus === 'completed') {
+                paymentStatus = '<span class="payment-status paid">✓ Paid</span>';
+            } else if (booking.payment.paymentStatus === 'pending') {
+                paymentStatus = '<span class="payment-status pending">⏳ Payment Pending</span>';
+            }
+        } else if (booking.status === 'paid') {
+            paymentStatus = '<span class="payment-status paid">✓ Paid</span>';
+        }
 
         const actions = isUpcoming ? `
             <div class="booking-actions">
@@ -182,6 +233,7 @@ class UserDashboard {
                     <div class="booking-class">${booking.className}</div>
                     <div class="booking-status ${statusClass}">${statusText}</div>
                 </div>
+                ${paymentStatus ? `<div class="booking-payment-status">${paymentStatus}</div>` : ''}
                 <div class="booking-details">
                     <div class="booking-detail">
                         <strong>Date:</strong> ${formattedDate}

@@ -827,15 +827,15 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
     
     // Get price for class
     const classPricing = {
-        'Classic Italian American I': '$125',
-        'Classic Italian American II': '$135',
-        'Classic Italian American III': '$145',
-        'Pasta Sauces': '$95',
-        'Fresh Scratch Pasta': '$115',
-        'Thanksgiving Sides': '$105',
-        'Holiday Appetizers': '$125',
+        'Classic Italian American I': '$85',
+        'Classic Italian American II': '$85',
+        'Classic Italian American III': '$85',
+        'Pasta Sauces': '$85',
+        'Fresh Scratch Pasta': '$85',
+        'Thanksgiving Sides': '$85',
+        'Holiday Appetizers': '$85',
         'Holiday Chocolate Desserts': '$85',
-        'Easy Breads': '$95',
+        'Easy Breads': '$85',
         'International Winter Soups': '$85'
     };
     

@@ -42,7 +42,7 @@
                 <button class="cta-button" onclick="scrollToSection('calendar')">Book a Class</button>
             </div>
                           <div class="hero-image">
-                <img src="IMG_3723.jpg" alt="Beautiful Cottage Kitchen" class="hero-kitchen-image" />
+                <img src="IMG_3723.jpg" alt="Beautiful Cottage Kitchen" class="hero-kitchen-image" id="heroImage" />
               </div>
         </section>
 
@@ -262,17 +262,17 @@
                                 </div>
                                 
                                 <!-- PayPal Button Container -->
-                                <div id="paypal-button-container" style="margin-top: 20px;"></div>
+                                <div id="paypal-button-container"></div>
                                 
                                 <!-- Payment Processing Indicator -->
-                                <div id="payment-processing" style="display: none; text-align: center; margin-top: 20px;">
+                                <div id="payment-processing" class="payment-processing-hidden">
                                     <div class="processing-spinner"></div>
                                     <p>Processing payment...</p>
                                 </div>
                                 
                                 <!-- Payment Messages -->
-                                <div id="payment-error-message" style="display: none; color: #dc3545; margin-top: 10px; padding: 10px; background: #f8d7da; border-radius: 5px;"></div>
-                                <div id="payment-cancel-message" style="display: none; color: #856404; margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px;"></div>
+                                <div id="payment-error-message" class="payment-message payment-error payment-message-hidden"></div>
+                                <div id="payment-cancel-message" class="payment-message payment-cancel payment-message-hidden"></div>
                             </div>
                             
                             <button type="submit" class="submit-button" id="reserveButton">Reserve My Seat</button>

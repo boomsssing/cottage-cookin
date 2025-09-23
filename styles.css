@@ -1900,7 +1900,7 @@ object-fit: cover;
 box-shadow: 
     0 20px 40px rgba(0, 0, 0, 0.15),
     0 10px 20px rgba(124, 154, 77, 0.1);
-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 position: relative;
 }
 
@@ -2877,4 +2877,35 @@ scroll-behavior: smooth;
 
 .important-notice strong {
     color: #d32f2f;
+}
+
+/* PayPal Integration Styles */
+#paypal-button-container {
+    margin-top: 20px;
+}
+
+.payment-processing-hidden {
+    display: none;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.payment-message {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.payment-message-hidden {
+    display: none;
+}
+
+.payment-error {
+    color: #dc3545;
+    background: #f8d7da;
+}
+
+.payment-cancel {
+    color: #856404;
+    background: #fff3cd;
 }

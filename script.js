@@ -836,8 +836,28 @@ function initializeCalendar(categoryFilter = 'all') {
     const calendar = document.getElementById('calendar');
     if (!calendar) return;
     
-    // Get classes from localStorage with real-time sync
+    // CRITICAL FIX: Always recalculate seat availability from fresh bookings data
     const availableDates = getClassesFromStorage();
+    
+    // DOUBLE-CHECK: Ensure seat counts are accurate by recalculating from bookings
+    const currentBookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
+    availableDates.forEach(classItem => {
+        const matchingBookings = currentBookings.filter(booking => {
+            const bookingDate = new Date(booking.date).toISOString().split('T')[0];
+            const classDate = new Date(classItem.date).toISOString().split('T')[0];
+            const dateMatches = bookingDate === classDate;
+            const classMatches = booking.className === classItem.class || 
+                                classItem.class.toLowerCase().includes(booking.className.toLowerCase()) ||
+                                booking.className.toLowerCase().includes(classItem.class.toLowerCase());
+            return dateMatches && classMatches && booking.status !== 'cancelled';
+        });
+        
+        const bookedSeats = matchingBookings.reduce((sum, booking) => sum + (booking.seats || 0), 0);
+        classItem.seats = Math.max(0, 8 - bookedSeats);
+        
+        console.log(`🔄 REAL-TIME: "${classItem.class}" on ${classItem.date}: ${classItem.seats} available (${bookedSeats} booked from ${matchingBookings.length} bookings)`);
+    });
+    
     const today = new Date();
     
     // Filter only future classes and sort by date
@@ -1504,16 +1524,36 @@ function quickBook(className, date) {
 
 // REAL-TIME localStorage functions for calendar management
 function getClassesFromStorage() {
-    // Always get fresh data from localStorage
-    const stored = localStorage.getItem('cottageClasses');
+    // First check if admin has already created the customer classes
+    let stored = localStorage.getItem('cottageClasses');
     if (stored) {
         const classes = JSON.parse(stored);
         console.log('📊 Loaded', classes.length, 'classes from storage');
         return classes;
     }
     
+    // If no customer classes, try to load from admin and sync
+    const adminClasses = JSON.parse(localStorage.getItem('cottageClassesAdmin') || '[]');
+    if (adminClasses.length > 0) {
+        // Convert admin classes to customer format
+        const customerClasses = adminClasses
+            .filter(cls => new Date(cls.date) >= new Date()) // Only future classes
+            .map(cls => ({
+                id: cls.id,
+                date: cls.date,
+                class: cls.name,
+                seats: cls.maxSeats - cls.bookedSeats,
+                time: cls.time,
+                description: cls.description
+            }));
+        
+        saveClassesToStorage(customerClasses);
+        console.log('📊 Synced', customerClasses.length, 'classes from admin storage');
+        return customerClasses;
+    }
+    
     // 2025 Culinary Class Schedule - EXACT from client specification
-    const defaultClasses = [
+    let defaultClasses = [
         // Classic Italian American I - 9/20/25 6:00-9:00, 11/1/25 6:00-9:00
         { date: '2025-09-20', class: 'Classic Italian American I', seats: 8, id: 1, time: '6:00-9:00 PM', description: 'Sicilian Orange Salad • Three Cheese Garlic Bread • Tuscan White Bean Spread • Spaghetti with Fresh Pomodoro Sauce • Zabaglione' },
         { date: '2025-11-01', class: 'Classic Italian American I', seats: 8, id: 2, time: '6:00-9:00 PM', description: 'Sicilian Orange Salad • Three Cheese Garlic Bread • Tuscan White Bean Spread • Spaghetti with Fresh Pomodoro Sauce • Zabaglione' },
@@ -1556,6 +1596,30 @@ function getClassesFromStorage() {
         { date: '2025-12-20', class: 'International Winter Soups', seats: 8, id: 21, time: '6:00-9:00 PM', description: 'Chicken Matzoh Ball • Pasta Fagioli • Sopa De Pollo (Mexican Chicken Soup) • Hungarian Goulyas Soup • Beef Barley' }
     ];
     
+    // CRITICAL FIX: Sync seats with actual bookings from cottageBookings
+    const existingBookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
+    
+    // Calculate actual available seats for each class
+    defaultClasses.forEach(customerClass => {
+        const classBookings = existingBookings.filter(booking => {
+            const bookingDate = new Date(booking.date).toISOString().split('T')[0];
+            const classDate = new Date(customerClass.date).toISOString().split('T')[0];
+            
+            // Match by date and class name
+            const dateMatches = bookingDate === classDate;
+            const classMatches = booking.className === customerClass.class || 
+                                 customerClass.class.toLowerCase().includes(booking.className.toLowerCase());
+            
+            return dateMatches && classMatches && booking.status !== 'cancelled';
+        });
+        
+        // Calculate available seats (max 8 - booked seats)
+        const totalBookedSeats = classBookings.reduce((sum, booking) => sum + (booking.seats || 0), 0);
+        customerClass.seats = Math.max(0, 8 - totalBookedSeats);
+        
+        console.log(`🔄 Class "${customerClass.class}" on ${customerClass.date}: ${customerClass.seats} available seats (${totalBookedSeats} booked from ${classBookings.length} bookings)`);
+    });
+    
     // Save defaults to localStorage
     saveClassesToStorage(defaultClasses);
     return defaultClasses;
@@ -1563,11 +1627,20 @@ function getClassesFromStorage() {
 
 function saveClassesToStorage(classes) {
     localStorage.setItem('cottageClasses', JSON.stringify(classes));
-    // Trigger calendar refresh if on main page
+    
+    // IMMEDIATE REFRESH: Always trigger calendar refresh to show updated seat counts
     if (document.getElementById('calendar')) {
         const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+        console.log('🔄 INSTANT UPDATE: Refreshing calendar with latest seat availability...');
         initializeCalendar(currentFilter);
     }
+    
+    // Force trigger storage event for real-time cross-tab updates
+    window.dispatchEvent(new StorageEvent('storage', {
+        key: 'cottageClasses',
+        newValue: JSON.stringify(classes),
+        oldValue: null
+    }));
 }
 
 // ENHANCED: Listen for storage changes from admin panel
@@ -1695,24 +1768,28 @@ function refreshCalendarWithNewSchedule() {
     setTimeout(() => notification.remove(), 4000);
 }
 
-// Auto-refresh calendar every 30 seconds to stay in sync
+// ENHANCED: Auto-refresh calendar every 15 seconds to ensure real-time seat availability
 setInterval(() => {
-    if (document.getElementById('calendar')) {
-        const lastUpdate = localStorage.getItem('lastUpdate');
-        if (lastUpdate) {
-            const timeSince = Date.now() - parseInt(lastUpdate);
-            if (timeSince < 30000) { // If updated within last 30 seconds
-                console.log('🔄 Auto-refreshing calendar for recent updates...');
-                const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+    if (document.getElementById('calendar') && document.visibilityState === 'visible') {
+        console.log('🔄 REAL-TIME CHECK: Verifying current seat availability...');
+        
+        // Force fresh calculation from bookings every time
+        const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
         initializeCalendar(currentFilter);
-            }
-        }
+        
+        console.log('✅ Calendar refreshed with latest seat counts');
     }
-}, 30000);
+}, 15000);
 
 // Initialize calendar with new schedule on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Force refresh with new schedule
+    // CRITICAL FIX: Force fresh seat availability calculation on every page load
+    console.log('🔄 PAGE LOAD: Recalculating all seat availability from current bookings...');
+    
+    // Clear cached class data to force fresh calculation
+    localStorage.removeItem('cottageClasses');
+    
+    // Force refresh with new schedule and updated seat counts
     setTimeout(() => {
         refreshCalendarWithNewSchedule();
     }, 500);
@@ -1798,24 +1875,48 @@ function handlePaymentSuccess(paymentData) {
     const classToUpdate = classes.find(cls => {
         const clsDate = new Date(cls.date).toISOString().split('T')[0];
         const formDate = new Date(bookingData.classDate).toISOString().split('T')[0];
-        return clsDate === formDate && cls.class.toLowerCase().includes(getClassNameFromValue(bookingData.className));
+        const dateMatches = clsDate === formDate;
+        
+        // More precise class matching
+        const fullClassName = getFullClassName(bookingData.className);
+        const classMatches = cls.class === fullClassName || 
+                            cls.class.toLowerCase().includes(getClassNameFromValue(bookingData.className).toLowerCase());
+        
+        console.log(`🔍 Customer class match check: ${cls.class} vs ${fullClassName} on ${clsDate} vs ${formDate} - Date: ${dateMatches}, Class: ${classMatches}`);
+        return dateMatches && classMatches;
     });
     
-    // Find matching class in admin storage
+    // Find matching class in admin storage  
     const adminClassToUpdate = adminClasses.find(cls => {
         const clsDate = new Date(cls.date).toISOString().split('T')[0];
         const formDate = new Date(bookingData.classDate).toISOString().split('T')[0];
-        return clsDate === formDate && cls.name.toLowerCase().includes(getClassNameFromValue(bookingData.className));
+        const dateMatches = clsDate === formDate;
+        
+        // More precise class matching
+        const fullClassName = getFullClassName(bookingData.className);
+        const classMatches = cls.name === fullClassName || 
+                            cls.name.toLowerCase().includes(getClassNameFromValue(bookingData.className).toLowerCase());
+        
+        console.log(`🔍 Admin class match check: ${cls.name} vs ${fullClassName} on ${clsDate} vs ${formDate} - Date: ${dateMatches}, Class: ${classMatches}`);
+        return dateMatches && classMatches;
     });
     
+    console.log(`🎯 Found customer class: ${classToUpdate ? 'YES' : 'NO'}`);
+    console.log(`🎯 Found admin class: ${adminClassToUpdate ? 'YES' : 'NO'}`);
+    
     if (classToUpdate && classToUpdate.seats >= parseInt(bookingData.seats)) {
+        console.log(`✅ Updating customer class seats: ${classToUpdate.seats} - ${bookingData.seats} = ${classToUpdate.seats - parseInt(bookingData.seats)}`);
+        
         // Update customer storage
         classToUpdate.seats -= parseInt(bookingData.seats);
         
         // Update admin storage - increase booked seats
         if (adminClassToUpdate) {
+            console.log(`✅ Updating admin class bookedSeats: ${adminClassToUpdate.bookedSeats} + ${bookingData.seats} = ${adminClassToUpdate.bookedSeats + parseInt(bookingData.seats)}`);
             adminClassToUpdate.bookedSeats += parseInt(bookingData.seats);
             localStorage.setItem('cottageClassesAdmin', JSON.stringify(adminClasses));
+        } else {
+            console.error('❌ Admin class not found for booking update!');
         }
         
         // Save booking record with payment info
@@ -1826,7 +1927,7 @@ function handlePaymentSuccess(paymentData) {
             customerName: bookingData.name,
             email: bookingData.email,
             phone: bookingData.phone,
-            className: bookingData.className,
+            className: getFullClassName(bookingData.className), // Store full class name for consistency
             seats: parseInt(bookingData.seats),
             dietary: bookingData.dietary,
             status: 'paid',
@@ -1840,11 +1941,20 @@ function handlePaymentSuccess(paymentData) {
                 payerEmail: paymentData.payer.email_address
             }
         };
+        
+        console.log(`💾 Saving booking with className: "${newBooking.className}" for ${newBooking.seats} seats on ${newBooking.date}`);
         bookings.push(newBooking);
         localStorage.setItem('cottageBookings', JSON.stringify(bookings));
         
         saveClassesToStorage(classes);
         triggerCalendarUpdate();
+        
+        // INSTANT VISUAL UPDATE: Force immediate calendar refresh
+        if (document.getElementById('calendar')) {
+            console.log('🚀 BOOKING COMPLETE: Forcing immediate calendar refresh...');
+            const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+            initializeCalendar(currentFilter);
+        }
         
         // Enhanced booking confirmation with user integration
         const isLoggedIn = localStorage.getItem('userLoggedIn');
@@ -1865,11 +1975,11 @@ function handlePaymentSuccess(paymentData) {
             if (!users.find(u => u.email === bookingData.email)) {
                 const tempPassword = generateTempPassword();
                 const newUser = {
-                    firstName: formData.name.split(' ')[0],
-                    lastName: formData.name.split(' ').slice(1).join(' ') || '',
-                    email: formData.email,
-                    phone: formData.phone,
-                    dietary: formData.dietary,
+                    firstName: bookingData.name.split(' ')[0],
+                    lastName: bookingData.name.split(' ').slice(1).join(' ') || '',
+                    email: bookingData.email,
+                    phone: bookingData.phone,
+                    dietary: bookingData.dietary,
                     password: tempPassword,
                     createdAt: new Date().toISOString(),
                     experience: 'beginner',
@@ -1878,14 +1988,14 @@ function handlePaymentSuccess(paymentData) {
                 users.push(newUser);
                 localStorage.setItem('users', JSON.stringify(users));
                 
-                const successMessage = `✅ BOOKING CONFIRMED!\n\nThank you, ${formData.name}!\n${formData.seats} seat(s) booked for ${getFullClassName(formData.className)}\nDate: ${new Date(formData.classDate).toLocaleDateString()}\n\nWe've also created an account for you!\nEmail: ${formData.email}\nTemp Password: ${tempPassword}\n\n⚡ Calendar updated in real-time!`;
+                const successMessage = `✅ BOOKING CONFIRMED!\n\nThank you, ${bookingData.name}!\n${bookingData.seats} seat(s) booked for ${getFullClassName(bookingData.className)}\nDate: ${new Date(bookingData.classDate).toLocaleDateString()}\n\nWe've also created an account for you!\nEmail: ${bookingData.email}\nTemp Password: ${tempPassword}\n\n⚡ Calendar updated in real-time!`;
                 alert(successMessage);
             } else {
-                const successMessage = `✅ BOOKING CONFIRMED!\n\nThank you, ${formData.name}!\n${formData.seats} seat(s) booked for ${getFullClassName(formData.className)}\nDate: ${new Date(formData.classDate).toLocaleDateString()}\n\nConfirmation sent to: ${formData.email}\n\n⚡ Calendar updated in real-time!`;
+                const successMessage = `✅ BOOKING CONFIRMED!\n\nThank you, ${bookingData.name}!\n${bookingData.seats} seat(s) booked for ${getFullClassName(bookingData.className)}\nDate: ${new Date(bookingData.classDate).toLocaleDateString()}\n\nConfirmation sent to: ${bookingData.email}\n\n⚡ Calendar updated in real-time!`;
                 alert(successMessage);
             }
         } else {
-            const successMessage = `✅ BOOKING CONFIRMED!\n\nThank you, ${formData.name}!\n${formData.seats} seat(s) booked for ${getFullClassName(formData.className)}\nDate: ${new Date(formData.classDate).toLocaleDateString()}\n\nView in your dashboard!\n\n⚡ Calendar updated in real-time!`;
+            const successMessage = `✅ BOOKING CONFIRMED!\n\nThank you, ${bookingData.name}!\n${bookingData.seats} seat(s) booked for ${getFullClassName(bookingData.className)}\nDate: ${new Date(bookingData.classDate).toLocaleDateString()}\n\nView in your dashboard!\n\n⚡ Calendar updated in real-time!`;
             alert(successMessage);
             
             // Offer to go to dashboard
@@ -1907,7 +2017,24 @@ function handlePaymentSuccess(paymentData) {
             });
         }, 1000);
     } else {
-        alert('❌ Sorry, not enough seats available for this class. Please try a different date or fewer seats.\n\n🔄 Check the calendar below for updated availability!');
+        let errorMessage = '❌ Booking failed: ';
+        if (!classToUpdate) {
+            errorMessage += 'Class not found in system. ';
+            console.error('❌ Customer class not found for booking:', {
+                date: bookingData.classDate,
+                className: bookingData.className,
+                fullClassName: getFullClassName(bookingData.className)
+            });
+        } else if (classToUpdate.seats < parseInt(bookingData.seats)) {
+            errorMessage += `Not enough seats available. Only ${classToUpdate.seats} seats remaining.`;
+            console.error('❌ Not enough seats available:', {
+                requested: bookingData.seats,
+                available: classToUpdate.seats
+            });
+        }
+        
+        alert(errorMessage + '\n\n🔄 Check the calendar below for updated availability!');
+        
         // Refresh calendar to show current availability
         const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
         initializeCalendar(currentFilter);
@@ -3196,3 +3323,144 @@ window.handleAdminLogin = handleAdminLogin;
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { AdminPanel };
 }
+
+// Hero Image Shuffle Functionality
+class HeroImageShuffle {
+    constructor() {
+        // Array of images to rotate through (including original hero image)
+        this.images = [
+            {
+                src: 'IMG_3723.jpg',
+                alt: 'Beautiful Cottage Kitchen'
+            },
+            {
+                src: 'IMG_4863.jpg',
+                alt: 'Delicious Homemade Cookies'
+            },
+            {
+                src: 'IMG_4866.jpg', 
+                alt: 'Authentic Italian Pizza'
+            },
+            {
+                src: '81EB894A-165A-4029-8AB8-E5658FD7831D.JPG',
+                alt: 'Happy Customer with Delicious Pizza'
+            },
+            {
+                src: 'IMG_4177.JPEG',
+                alt: 'Fresh Pasta with Pesto'
+            },
+            {
+                src: 'IMG_4180.JPEG',
+                alt: 'Gourmet Charcuterie Board'
+            }
+        ];
+        
+        this.currentIndex = 0;
+        this.heroImageElement = null;
+        this.intervalId = null;
+        this.isInitialized = false;
+    }
+    
+    init() {
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.setupShuffle());
+        } else {
+            this.setupShuffle();
+        }
+    }
+    
+    setupShuffle() {
+        this.heroImageElement = document.getElementById('heroImage');
+        
+        if (!this.heroImageElement) {
+            console.warn('Hero image element not found');
+            return;
+        }
+        
+        this.isInitialized = true;
+        
+        // Start the shuffle after a brief delay
+        setTimeout(() => {
+            this.startShuffle();
+        }, 3000); // Wait 3 seconds before starting
+    }
+    
+    startShuffle() {
+        if (!this.isInitialized) return;
+        
+        // Change image every 4 seconds
+        this.intervalId = setInterval(() => {
+            this.nextImage();
+        }, 4000);
+    }
+    
+    nextImage() {
+        if (!this.heroImageElement || !this.isInitialized) return;
+        
+        // Move to next image (loop back to start if at end)
+        this.currentIndex = (this.currentIndex + 1) % this.images.length;
+        
+        // Add fade out effect
+        this.heroImageElement.style.opacity = '0';
+        
+        // Change image after fade out
+        setTimeout(() => {
+            const nextImage = this.images[this.currentIndex];
+            this.heroImageElement.src = nextImage.src;
+            this.heroImageElement.alt = nextImage.alt;
+            
+            // Fade back in
+            this.heroImageElement.style.opacity = '1';
+        }, 300);
+    }
+    
+    pauseShuffle() {
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
+    }
+    
+    resumeShuffle() {
+        if (!this.intervalId && this.isInitialized) {
+            this.startShuffle();
+        }
+    }
+    
+    // Manual navigation (can be used for user interaction)
+    goToImage(index) {
+        if (index >= 0 && index < this.images.length && this.heroImageElement) {
+            this.currentIndex = index;
+            this.heroImageElement.style.opacity = '0';
+            
+            setTimeout(() => {
+                const image = this.images[this.currentIndex];
+                this.heroImageElement.src = image.src;
+                this.heroImageElement.alt = image.alt;
+                this.heroImageElement.style.opacity = '1';
+            }, 300);
+        }
+    }
+}
+
+// Initialize the hero image shuffle
+const heroShuffle = new HeroImageShuffle();
+heroShuffle.init();
+
+// Pause shuffle when user hovers over hero section
+document.addEventListener('DOMContentLoaded', function() {
+    const heroSection = document.getElementById('home');
+    if (heroSection) {
+        heroSection.addEventListener('mouseenter', () => {
+            heroShuffle.pauseShuffle();
+        });
+        
+        heroSection.addEventListener('mouseleave', () => {
+            heroShuffle.resumeShuffle();
+        });
+    }
+});
+
+// Export for global access
+window.heroShuffle = heroShuffle;

@@ -2029,7 +2029,8 @@ function handlePaymentSuccess(paymentData) {
         const classMatches = cls.class === fullClassName || 
                             cls.class.toLowerCase().includes(getClassNameFromValue(bookingData.className).toLowerCase());
         
-        console.log(`🔍 Customer class match check: ${cls.class} vs ${fullClassName} on ${clsDate} vs ${formDate} - Date: ${dateMatches}, Class: ${classMatches}`);
+        console.log(`🔍 Customer class match check: "${cls.class}" vs "${fullClassName}" on ${clsDate} vs ${formDate} - Date: ${dateMatches}, Class: ${classMatches}`);
+        console.log(`🔍 Raw booking data: className="${bookingData.className}", classDate="${bookingData.classDate}"`);
         return dateMatches && classMatches;
     });
     
@@ -2044,7 +2045,8 @@ function handlePaymentSuccess(paymentData) {
         const classMatches = cls.class === fullClassName || 
                             cls.class.toLowerCase().includes(getClassNameFromValue(bookingData.className).toLowerCase());
         
-        console.log(`🔍 Admin class match check: ${cls.class} vs ${fullClassName} on ${clsDate} vs ${formDate} - Date: ${dateMatches}, Class: ${classMatches}`);
+        console.log(`🔍 Admin class match check: "${cls.class}" vs "${fullClassName}" on ${clsDate} vs ${formDate} - Date: ${dateMatches}, Class: ${classMatches}`);
+        console.log(`🔍 Admin raw booking data: className="${bookingData.className}", classDate="${bookingData.classDate}"`);
         return dateMatches && classMatches;
     });
     
@@ -2100,7 +2102,16 @@ function handlePaymentSuccess(paymentData) {
         if (document.getElementById('calendar')) {
             console.log('🚀 BOOKING COMPLETE: Forcing immediate calendar refresh...');
             const currentFilter = document.getElementById('categoryFilter')?.value || 'all';
+            
+            // Force clear any cached data and recalculate
+            localStorage.removeItem('cottageClasses');
             initializeCalendar(currentFilter);
+            
+            // Double-check by forcing another refresh after a short delay
+            setTimeout(() => {
+                console.log('🔄 DOUBLE-CHECK: Forcing second calendar refresh...');
+                initializeCalendar(currentFilter);
+            }, 1000);
         }
         
         // Enhanced booking confirmation with user integration

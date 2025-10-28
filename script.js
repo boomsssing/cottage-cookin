@@ -2039,12 +2039,12 @@ function handlePaymentSuccess(paymentData) {
         const formDate = new Date(bookingData.classDate).toISOString().split('T')[0];
         const dateMatches = clsDate === formDate;
         
-        // More precise class matching
+        // More precise class matching - use same logic as customer classes
         const fullClassName = getFullClassName(bookingData.className);
-        const classMatches = cls.name === fullClassName || 
-                            cls.name.toLowerCase().includes(getClassNameFromValue(bookingData.className).toLowerCase());
+        const classMatches = cls.class === fullClassName || 
+                            cls.class.toLowerCase().includes(getClassNameFromValue(bookingData.className).toLowerCase());
         
-        console.log(`🔍 Admin class match check: ${cls.name} vs ${fullClassName} on ${clsDate} vs ${formDate} - Date: ${dateMatches}, Class: ${classMatches}`);
+        console.log(`🔍 Admin class match check: ${cls.class} vs ${fullClassName} on ${clsDate} vs ${formDate} - Date: ${dateMatches}, Class: ${classMatches}`);
         return dateMatches && classMatches;
     });
     

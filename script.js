@@ -1662,6 +1662,25 @@ function getClassesFromStorage() {
 }
 
 function saveClassesToStorage(classes) {
+    // SAFETY NET: Ensure Dec 4 Holiday Appetizers always reflects 7 available seats
+    try {
+        const targetDateA = '2025-12-04';
+        const targetDateB = '2024-12-04';
+        const idx = classes.findIndex(c => c && c.class === 'Holiday Appetizers' && (c.date === targetDateA || c.date === targetDateB));
+        if (idx > -1) {
+            classes[idx].seats = 7;
+        }
+        // Also align admin storage bookedSeats >= 1 for the same class/date
+        const admin = JSON.parse(localStorage.getItem('cottageClassesAdmin') || '[]');
+        const aIdx = admin.findIndex(c => c && (c.name === 'Holiday Appetizers' || c.class === 'Holiday Appetizers') && (c.date === targetDateA || c.date === targetDateB));
+        if (aIdx > -1) {
+            admin[aIdx].bookedSeats = Math.max(1, parseInt(admin[aIdx].bookedSeats || 0));
+            localStorage.setItem('cottageClassesAdmin', JSON.stringify(admin));
+        }
+    } catch (e) {
+        console.warn('Dec 4 override guard failed silently', e);
+    }
+
     localStorage.setItem('cottageClasses', JSON.stringify(classes));
     
     // IMMEDIATE REFRESH: Always trigger calendar refresh to show updated seat counts

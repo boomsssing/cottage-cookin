@@ -130,8 +130,15 @@ class PayPalIntegration {
         };
 
         // Call the main payment success handler - this handles all booking logic
+        console.log('🚨 PAYPAL: About to call handlePaymentSuccess function');
+        console.log('🚨 PAYPAL: handlePaymentSuccess function exists:', typeof handlePaymentSuccess === 'function');
+        
         if (typeof handlePaymentSuccess === 'function') {
+            console.log('🚨 PAYPAL: Calling handlePaymentSuccess with order data:', order);
             handlePaymentSuccess(order);
+            console.log('🚨 PAYPAL: handlePaymentSuccess completed');
+        } else {
+            console.error('❌ PAYPAL ERROR: handlePaymentSuccess function not found!');
         }
         
         // Note: handlePaymentSuccess already saves the booking, so we don't duplicate it here

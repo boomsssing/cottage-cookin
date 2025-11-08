@@ -860,26 +860,20 @@ function initializeCalendar(categoryFilter = 'all') {
                                 booking.className.toLowerCase().includes(classItem.class.toLowerCase());
             return dateMatches && classMatches && booking.status !== 'cancelled';
         });
-        
+
         const bookedSeats = matchingBookings.reduce((sum, booking) => sum + (booking.seats || 0), 0);
-        classItem.seats = Math.max(0, 8 - bookedSeats);
-        
-        // EMERGENCY FIX: Force December 4th Holiday Appetizers to show 7 seats
-        if (classItem.class === 'Holiday Appetizers' && (classItem.date === '2025-12-04' || classItem.date === '2024-12-04')) {
-            console.log('🚨 EMERGENCY OVERRIDE: Forcing December 4th Holiday Appetizers to 7 seats');
-            classItem.seats = 7;
-        }
-        
+        classItem.seats = Math.max(0, classItem.seats - bookedSeats);
+
         console.log(`🔄 REAL-TIME: "${classItem.class}" on ${classItem.date}: ${classItem.seats} available (${bookedSeats} booked from ${matchingBookings.length} bookings)`);
     });
-    
+
     const today = new Date();
-    
+
     // Filter only future classes and sort by date
     let futureClasses = availableDates
         .filter(item => new Date(item.date) >= today)
         .sort((a, b) => new Date(a.date) - new Date(b.date)); // Show ALL classes
-    
+
     // Apply category filter if not 'all'
     if (categoryFilter !== 'all') {
         futureClasses = futureClasses.filter(item => {
@@ -906,7 +900,7 @@ function initializeCalendar(categoryFilter = 'all') {
             }
         });
     }
-    
+
     let calendarHTML = `
         <div class="calendar-header">
             <h4 style="color: #2c5530; margin-bottom: 20px;">📅 Available Classes</h4>
@@ -914,7 +908,7 @@ function initializeCalendar(categoryFilter = 'all') {
         </div>
         <div class="classes-list">
     `;
-    
+
     if (futureClasses.length === 0) {
         calendarHTML += `
             <div class="no-classes" style="text-align: center; padding: 30px; color: #666;">
@@ -929,30 +923,30 @@ function initializeCalendar(categoryFilter = 'all') {
             const isToday = date.toDateString() === today.toDateString();
             const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
             const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            
-            const seatColor = item.seats === 0 ? '#dc3545' : 
-                             item.seats <= 2 ? '#fd7e14' : 
+
+            const seatColor = item.seats === 0 ? '#dc3545' :
+                             item.seats <= 2 ? '#fd7e14' :
                              '#7a9a4d';
-            
+
             const canBook = item.seats > 0;
-            
+
             calendarHTML += `
                 <div class="class-card-calendar" onclick="showClassDetails('${item.class.replace(/'/g, "\\'")}', '${item.date}', '${item.time}', '${item.description.replace(/'/g, "\\'")}', ${item.seats})">
                     ${isToday ? '<div style="position: absolute; top: -5px; right: -5px; background: #dc3545; color: white; padding: 2px 6px; border-radius: 8px; font-size: 0.6rem; font-weight: bold;">TODAY</div>' : ''}
-                    
+
                     <div class="date-circle" style="background: ${seatColor};">
                         <div style="font-size: 0.6rem; line-height: 1;">${date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}</div>
                         <div style="font-size: 1rem; line-height: 1;">${date.getDate()}</div>
                     </div>
-                    
+
                     <div class="class-info-compact">
                         <div class="class-title-compact">${item.class}</div>
                         <div class="class-date-compact">${dayName}, ${monthDay} ${item.time ? `at ${item.time}` : ''}</div>
                         ${item.description ? `<div class="class-description-compact" style="font-size: 0.65rem; color: #666; margin-top: 4px; line-height: 1.2;">${item.description.substring(0, 80)}${item.description.length > 80 ? '...' : ''}</div>` : ''}
                         <div class="class-availability-compact">
-                            ${item.seats === 0 ? '🚫 FULL' : 
-                              item.seats === 1 ? '⚠️ 1 SEAT LEFT' : 
-                              item.seats <= 2 ? `⚠️ ${item.seats} SEATS LEFT` : 
+                            ${item.seats === 0 ? '🚫 FULL' :
+                              item.seats === 1 ? '⚠️ 1 SEAT LEFT' :
+                              item.seats <= 2 ? `⚠️ ${item.seats} SEATS LEFT` :
                               `✅ ${item.seats} AVAILABLE`}
                         </div>
                         <div style="font-size: 0.6rem; color: #7a9a4d; margin-top: 8px; font-weight: 600;">Click for details →</div>
@@ -961,14 +955,14 @@ function initializeCalendar(categoryFilter = 'all') {
             `;
         });
     }
-    
+
     calendarHTML += `
         </div>
         <div style="text-align: center; margin-top: 20px; padding: 15px; background: #f8faf8; border-radius: 8px;">
             <p style="font-size: 0.7rem; color: #666; margin: 0;">💡 Classes are updated in real-time. Book quickly as seats fill up fast!</p>
         </div>
     `;
-    
+
     calendar.innerHTML = calendarHTML;
     console.log('📅 Calendar updated with', futureClasses.length, 'available classes');
 }
@@ -977,10 +971,10 @@ function initializeCalendar(categoryFilter = 'all') {
 function filterCalendarByCategory() {
     const categoryFilter = document.getElementById('categoryFilter');
     if (!categoryFilter) return;
-    
+
     const selectedCategory = categoryFilter.value;
     console.log('🔍 Filtering calendar by category:', selectedCategory);
-    
+
     // Reinitialize calendar with the selected filter
     initializeCalendar(selectedCategory);
 }
@@ -993,7 +987,7 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
         month: 'long', 
         day: 'numeric' 
     });
-    
+
     // Get price for class
     const classPricing = {
         'Classic Italian American I': '$85',
@@ -1007,9 +1001,9 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
         'Easy Breads': '$85',
         'International Winter Soups': '$85'
     };
-    
+
     const price = classPricing[className] || 'Contact for pricing';
-    
+
     // Create and show popup
     const popup = document.createElement('div');
     popup.id = 'classDetailsPopup';
@@ -1026,7 +1020,7 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
         z-index: 2000;
         animation: fadeIn 0.3s ease;
     `;
-    
+
     popup.innerHTML = `
         <div style="
             background: white;
@@ -1050,7 +1044,7 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
                 color: #666;
                 padding: 5px;
             ">&times;</button>
-            
+
             <div style="margin-bottom: 20px;">
                 <h2 style="color: #2c5530; margin-bottom: 10px; font-size: 1.5rem;">${className}</h2>
                 <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
@@ -1065,14 +1059,14 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
                       `✅ ${seatsAvailable} SEATS AVAILABLE`}
                 </div>
             </div>
-            
+
             <div style="margin-bottom: 25px;">
                 <h3 style="color: #2c5530; margin-bottom: 12px; font-size: 1.1rem;">What You'll Learn & Create:</h3>
                 <div style="background: #f8faf8; padding: 15px; border-radius: 8px; border-left: 4px solid #7a9a4d;">
                     <p style="margin: 0; line-height: 1.6; color: #333; font-size: 0.9rem;">${description.replace(/•/g, '<br/>•')}</p>
                 </div>
             </div>
-            
+
             <div style="text-align: center; margin-top: 25px;">
                 ${seatsAvailable > 0 ? 
                     `<button id="bookClassBtn" data-class="${className}" data-date="${date}" style="
@@ -1116,10 +1110,10 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(popup);
     document.body.style.overflow = 'hidden';
-    
+
     // Add event listener to the book button
     setTimeout(() => {
         const bookButton = popup.querySelector('#bookClassBtn');
@@ -1127,11 +1121,11 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
             bookButton.onclick = function() {
                 const classData = this.getAttribute('data-class');
                 const dateData = this.getAttribute('data-date');
-                
+
                 // Check if user is signed in
                 const isLoggedIn = localStorage.getItem('userLoggedIn');
                 const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-                
+
                 if (isLoggedIn && currentUser.email) {
                     // User is signed in - show payment options
                     showPaymentOptions(classData, dateData, currentUser);
@@ -1142,7 +1136,7 @@ function showClassDetails(className, date, time, description, seatsAvailable) {
             };
         }
     }, 100);
-    
+
     // Add fadeIn animation
     if (!document.getElementById('popupStyles')) {
         const style = document.createElement('style');
@@ -1169,7 +1163,7 @@ function closeClassDetails() {
 // Show sign-in prompt for non-logged in users
 function showSignInPrompt(className, date) {
     closeClassDetails();
-    
+
     const signInModal = document.createElement('div');
     signInModal.id = 'signInPromptModal';
     signInModal.style.cssText = `
@@ -1185,14 +1179,14 @@ function showSignInPrompt(className, date) {
         z-index: 2000;
         animation: fadeIn 0.3s ease;
     `;
-    
+
     const formattedDate = new Date(date).toLocaleDateString('en-US', { 
         weekday: 'long', 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
     });
-    
+
     signInModal.innerHTML = `
         <div style="
             background: white;
@@ -1215,14 +1209,14 @@ function showSignInPrompt(className, date) {
                 color: #666;
                 padding: 5px;
             ">&times;</button>
-            
+
             <div style="margin-bottom: 25px;">
                 <h2 style="color: #2c5530; margin-bottom: 10px; font-size: 1.5rem;">Sign In to Book</h2>
                 <p style="color: #666; margin-bottom: 5px;"><strong>${className}</strong></p>
                 <p style="color: #666; margin-bottom: 20px;">${formattedDate}</p>
                 <p style="color: #2c5530; font-weight: 600; font-size: 1.1rem;">Class Price: $85</p>
             </div>
-            
+
             <div style="margin-bottom: 25px;">
                 <p style="color: #666; margin-bottom: 20px;">
                     Please sign in to your account to book this class. This allows us to:
@@ -1234,7 +1228,7 @@ function showSignInPrompt(className, date) {
                     <li>Provide better customer service</li>
                 </ul>
             </div>
-            
+
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <button onclick="authSystem.openSignInModal(); closeSignInPrompt();" style="
                     background: #7a9a4d;
@@ -1248,7 +1242,7 @@ function showSignInPrompt(className, date) {
                 " onmouseover="this.style.background='#2c5530'" onmouseout="this.style.background='#7a9a4d'">
                     🔐 Sign In
                 </button>
-                
+
                 <button onclick="authSystem.openSignUpModal(); closeSignInPrompt();" style="
                     background: #6c757d;
                     color: white;
@@ -1262,7 +1256,7 @@ function showSignInPrompt(className, date) {
                     📝 Create Account
                 </button>
             </div>
-            
+
             <div style="margin-top: 20px;">
                 <p style="color: #666; font-size: 0.9rem;">
                     Don't worry - creating an account is quick and free!
@@ -1270,7 +1264,7 @@ function showSignInPrompt(className, date) {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(signInModal);
     document.body.style.overflow = 'hidden';
 }
@@ -1287,7 +1281,7 @@ function closeSignInPrompt() {
 // Show payment options modal
 function showPaymentOptions(className, date, currentUser) {
     closeClassDetails();
-    
+
     // Create payment options modal
     const paymentModal = document.createElement('div');
     paymentModal.id = 'paymentOptionsModal';
@@ -1304,14 +1298,14 @@ function showPaymentOptions(className, date, currentUser) {
         z-index: 2000;
         animation: fadeIn 0.3s ease;
     `;
-    
+
     const formattedDate = new Date(date).toLocaleDateString('en-US', { 
         weekday: 'long', 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
     });
-    
+
     paymentModal.innerHTML = `
         <div style="
             background: white;
@@ -1334,7 +1328,7 @@ function showPaymentOptions(className, date, currentUser) {
                 color: #666;
                 padding: 5px;
             ">&times;</button>
-            
+
             <div style="margin-bottom: 25px;">
                 <h2 style="color: #2c5530; margin-bottom: 10px; font-size: 1.5rem;">Complete Your Booking</h2>
                 <p style="color: #666; margin-bottom: 5px;"><strong>${className}</strong></p>
@@ -1344,10 +1338,10 @@ function showPaymentOptions(className, date, currentUser) {
                     Booking for: <strong>${currentUser.firstName} ${currentUser.lastName}</strong> (${currentUser.email})
                 </p>
             </div>
-            
+
             <div style="margin-bottom: 25px;">
                 <p style="color: #666; margin-bottom: 20px;">Please complete your payment using one of the options below:</p>
-                
+
                 <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                     <a href="https://www.paypal.me/BrianAverna" target="_blank" onclick="trackPaymentAttempt('paypal', '${className}', '${date}', '${currentUser.email}')" style="
                         background: #0070ba;
@@ -1361,7 +1355,7 @@ function showPaymentOptions(className, date, currentUser) {
                     " onmouseover="this.style.background='#005ea6'" onmouseout="this.style.background='#0070ba'">
                         💳 PayPal
                     </a>
-                    
+
                     <a href="https://venmo.com/u/Brian-Averna" target="_blank" onclick="trackPaymentAttempt('venmo', '${className}', '${date}', '${currentUser.email}')" style="
                         background: #008cff;
                         color: white;
@@ -1374,7 +1368,7 @@ function showPaymentOptions(className, date, currentUser) {
                     " onmouseover="this.style.background='#0077cc'" onmouseout="this.style.background='#008cff'">
                         📱 Venmo
                     </a>
-                    
+
                     <button type="button" onclick="initiateApplePayFromModal('${className}', '${date}', '${currentUser.email}')" style="
                         background: #000000;
                         color: white;
@@ -1391,14 +1385,14 @@ function showPaymentOptions(className, date, currentUser) {
                     </button>
                 </div>
             </div>
-            
+
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                 <p style="margin: 0; color: #666; font-size: 0.9rem;">
                     <strong>Important:</strong> After payment, please email brianwaverna@gmail.com with your name, 
                     the class name, and date to confirm your booking. Your booking will be tracked in your dashboard.
                 </p>
             </div>
-            
+
             <button onclick="closePaymentOptions()" style="
                 background: #e9ecef;
                 color: #333;
@@ -1413,7 +1407,7 @@ function showPaymentOptions(className, date, currentUser) {
             </button>
         </div>
     `;
-    
+
     document.body.appendChild(paymentModal);
     document.body.style.overflow = 'hidden';
 }
@@ -1430,11 +1424,11 @@ function closePaymentOptions() {
 // Book this specific class (keeping for backward compatibility)
 function bookThisClass(className, date) {
     closeClassDetails();
-    
+
     // Auto-fill the booking form
     const classSelect = document.getElementById('className');
     const dateInput = document.getElementById('classDate');
-    
+
     if (classSelect && dateInput) {
         // Map class names to form values
         const classMap = {
@@ -1449,28 +1443,28 @@ function bookThisClass(className, date) {
             'Easy Breads': 'easy-breads',
             'International Winter Soups': 'winter-soups'
         };
-        
+
         const classValue = classMap[className];
         if (classValue) {
             classSelect.value = classValue;
             dateInput.value = date;
-            
+
             // Scroll to booking form smoothly
             document.querySelector('.booking-form').scrollIntoView({
                 behavior: 'smooth',
                 block: 'center'
             });
-            
+
             // Highlight the form
             const form = document.querySelector('.booking-form');
             form.style.boxShadow = '0 0 20px rgba(122, 154, 77, 0.5)';
             form.style.transform = 'scale(1.02)';
-            
+
             setTimeout(() => {
                 form.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
                 form.style.transform = 'scale(1)';
             }, 2000);
-            
+
             // Set default seat selection
             const seatsSelect = document.getElementById('seats');
             if (seatsSelect) {
@@ -1479,15 +1473,15 @@ function bookThisClass(className, date) {
                 const event = new Event('change');
                 seatsSelect.dispatchEvent(event);
             }
-            
+
             // Show helpful message
             const message = document.createElement('div');
             message.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #7a9a4d; color: white; padding: 10px 15px; border-radius: 5px; z-index: 1001; font-size: 0.9rem; max-width: 300px;';
             message.innerHTML = `✅ <strong>${className}</strong> selected!<br/>Please fill in your details and click "Reserve My Seat" to continue.`;
             document.body.appendChild(message);
-            
+
             setTimeout(() => message.remove(), 5000);
-            
+
             // Focus on the first required field to guide the user
             setTimeout(() => {
                 const nameInput = document.getElementById('name');
@@ -1495,7 +1489,7 @@ function bookThisClass(className, date) {
                     nameInput.focus();
                     nameInput.style.borderColor = '#7a9a4d';
                     nameInput.style.boxShadow = '0 0 5px rgba(122, 154, 77, 0.3)';
-                    
+
                     setTimeout(() => {
                         nameInput.style.borderColor = '';
                         nameInput.style.boxShadow = '';
@@ -1511,7 +1505,7 @@ function quickBook(className, date) {
     // Auto-fill the booking form
     const classSelect = document.getElementById('className');
     const dateInput = document.getElementById('classDate');
-    
+
     if (classSelect && dateInput) {
         // Map class names to form values
         const classMap = {
@@ -1519,34 +1513,34 @@ function quickBook(className, date) {
             'Farm-to-Table Cooking': 'farm-to-table', 
             'Classic Desserts': 'desserts'
         };
-        
+
         const classValue = Object.keys(classMap).find(key => className.includes(key.split(' ')[0]));
         if (classValue) {
             classSelect.value = classMap[classValue];
             dateInput.value = date;
-            
+
             // Scroll to booking form smoothly
             document.querySelector('.booking-form').scrollIntoView({
                 behavior: 'smooth',
                 block: 'center'
             });
-            
+
             // Highlight the form
             const form = document.querySelector('.booking-form');
             form.style.boxShadow = '0 0 20px rgba(122, 154, 77, 0.5)';
             form.style.transform = 'scale(1.02)';
-            
+
             setTimeout(() => {
                 form.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
                 form.style.transform = 'scale(1)';
             }, 2000);
-            
+
             // Show helpful message
             const message = document.createElement('div');
             message.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #7a9a4d; color: white; padding: 10px 15px; border-radius: 5px; z-index: 1001; font-size: 0.7rem;';
             message.textContent = `✅ ${className} selected! Complete your booking below.`;
             document.body.appendChild(message);
-            
+
             setTimeout(() => message.remove(), 3000);
         }
     }
@@ -1561,7 +1555,7 @@ function getClassesFromStorage() {
         console.log('📊 Loaded', classes.length, 'classes from storage');
         return classes;
     }
-    
+
     // If no customer classes, try to load from admin and sync
     const adminClasses = JSON.parse(localStorage.getItem('cottageClassesAdmin') || '[]');
     if (adminClasses.length > 0) {
@@ -1582,49 +1576,18 @@ function getClassesFromStorage() {
         return customerClasses;
     }
     
-    // 2025 Culinary Class Schedule - EXACT from client specification
-    let defaultClasses = [
-        // Classic Italian American I - 9/20/25 6:00-9:00, 11/1/25 6:00-9:00
-        { date: '2025-09-20', class: 'Classic Italian American I', seats: 8, id: 1, time: '6:00-9:00 PM', description: 'Sicilian Orange Salad • Three Cheese Garlic Bread • Tuscan White Bean Spread • Spaghetti with Fresh Pomodoro Sauce • Zabaglione' },
-        { date: '2025-11-01', class: 'Classic Italian American I', seats: 8, id: 2, time: '6:00-9:00 PM', description: 'Sicilian Orange Salad • Three Cheese Garlic Bread • Tuscan White Bean Spread • Spaghetti with Fresh Pomodoro Sauce • Zabaglione' },
-        
-        // Classic Italian American II - 10/4/25 6:00-9:00, 11/8/25 6:00-9:00
-        { date: '2025-10-04', class: 'Classic Italian American II', seats: 8, id: 3, time: '6:00-9:00 PM', description: 'Sausage Stuffed Mushrooms • Panzanella Salad • Homemade Pappardelle Alla Vodka • Chocolate Amaretto Soufflé' },
-        { date: '2025-11-08', class: 'Classic Italian American II', seats: 8, id: 4, time: '6:00-9:00 PM', description: 'Sausage Stuffed Mushrooms • Panzanella Salad • Homemade Pappardelle Alla Vodka • Chocolate Amaretto Soufflé' },
-        
-        // Classic Italian American III - 10/10/25 7:00-10:00, 11/15 6:00-9:00
-        { date: '2025-10-10', class: 'Classic Italian American III', seats: 8, id: 5, time: '7:00-10:00 PM', description: 'Pasta Fagioli Soup • Chicken Francese • Mushroom Risotto • Fried Sicilian Zeppole' },
-        { date: '2025-11-15', class: 'Classic Italian American III', seats: 8, id: 6, time: '6:00-9:00 PM', description: 'Pasta Fagioli Soup • Chicken Francese • Mushroom Risotto • Fried Sicilian Zeppole' },
-        
-        // Pasta Sauces - 10/18/25 6:00-9:00, 11/7/25 6:00-9:00
-        { date: '2025-10-18', class: 'Pasta Sauces', seats: 8, id: 7, time: '6:00-9:00 PM', description: 'Marinara • Amatriciana • Broccoli Aglio Olio • Lemon Alfredo • Tiramisu' },
-        { date: '2025-11-07', class: 'Pasta Sauces', seats: 8, id: 8, time: '6:00-9:00 PM', description: 'Marinara • Amatriciana • Broccoli Aglio Olio • Lemon Alfredo • Tiramisu' },
-        
-        // Fresh Scratch Pasta - 9/26/25 6:00-9:00, 11/22/25 6:00-9:00
-        { date: '2025-09-26', class: 'Fresh Scratch Pasta', seats: 8, id: 9, time: '6:00-9:00 PM', description: 'Gnocchi • Fettucine • Pappardelle • Tortellini • Fresh Pomodoro Sauce • Cannoli' },
-        { date: '2025-11-22', class: 'Fresh Scratch Pasta', seats: 8, id: 10, time: '6:00-9:00 PM', description: 'Gnocchi • Fettucine • Pappardelle • Tortellini • Fresh Pomodoro Sauce • Cannoli' },
-        
-        // Thanksgiving Sides - 11/14/25 7:00-10:00, 11/21 7:00-9:00
-        { date: '2025-11-14', class: 'Thanksgiving Sides', seats: 8, id: 11, time: '7:00-10:00 PM', description: 'Mascarpone Chive Mashed Potatoes • Bacon Balsamic Brussel Sprouts • Parker House Rolls • Butternut Squash Pecan Tarts • Amaretto Seared Mushrooms' },
-        { date: '2025-11-21', class: 'Thanksgiving Sides', seats: 8, id: 12, time: '7:00-9:00 PM', description: 'Mascarpone Chive Mashed Potatoes • Bacon Balsamic Brussel Sprouts • Parker House Rolls • Butternut Squash Pecan Tarts • Amaretto Seared Mushrooms' },
-        
-        // Holiday Appetizers - 12/5/25 7:00-10:00, 12/13/25 7:00-10:00
-        { date: '2025-12-05', class: 'Holiday Appetizers', seats: 8, id: 13, time: '7:00-10:00 PM', description: 'Miniature Beef Wellingtons • Sausage Mascarpone Stuffed Mushrooms • Fresh Hummus and Parmesan Pita Chips • Miniature Arancini Rice Balls • Sausage Spinach Pie' },
-        { date: '2025-12-13', class: 'Holiday Appetizers', seats: 8, id: 14, time: '7:00-10:00 PM', description: 'Miniature Beef Wellingtons • Sausage Mascarpone Stuffed Mushrooms • Fresh Hummus and Parmesan Pita Chips • Miniature Arancini Rice Balls • Sausage Spinach Pie' },
-        
-        // Holiday Chocolate Desserts - 11/28/25 6:00-9:00, 12/6/25 6:00-9:00
-        { date: '2025-11-28', class: 'Holiday Chocolate Desserts', seats: 8, id: 15, time: '6:00-9:00 PM', description: 'Chocolate Cranberry Paté • Chocolate Truffles • Christmas Blondies • Chocolate Chip Cookie Stuffed Fudge Brownies' },
-        { date: '2025-12-06', class: 'Holiday Chocolate Desserts', seats: 8, id: 16, time: '6:00-9:00 PM', description: 'Chocolate Cranberry Paté • Chocolate Truffles • Christmas Blondies • Chocolate Chip Cookie Stuffed Fudge Brownies' },
-        
-        // Easy Breads - 9/27/25 1:00-4:00, 10/25/25 1:00-4:00, 12/12/25 7:00-10:00
-        { date: '2025-09-27', class: 'Easy Breads', seats: 8, id: 17, time: '1:00-4:00 PM', description: 'Focaccia • Rustic French Boule • Ciabatta • Brazilian Cheese Rolls • Homemade Butter' },
-        { date: '2025-10-25', class: 'Easy Breads', seats: 8, id: 18, time: '1:00-4:00 PM', description: 'Focaccia • Rustic French Boule • Ciabatta • Brazilian Cheese Rolls • Homemade Butter' },
-        { date: '2025-12-12', class: 'Easy Breads', seats: 8, id: 19, time: '7:00-10:00 PM', description: 'Focaccia • Rustic French Boule • Ciabatta • Brazilian Cheese Rolls • Homemade Butter' },
-        
-        // International Winter Soups - 10/24/25 7:00-10:00, 12/20/25 6:00-9:00
-        { date: '2025-10-24', class: 'International Winter Soups', seats: 8, id: 20, time: '7:00-10:00 PM', description: 'Chicken Matzoh Ball • Pasta Fagioli • Sopa De Pollo (Mexican Chicken Soup) • Hungarian Goulyas Soup • Beef Barley' },
-        { date: '2025-12-20', class: 'International Winter Soups', seats: 8, id: 21, time: '6:00-9:00 PM', description: 'Chicken Matzoh Ball • Pasta Fagioli • Sopa De Pollo (Mexican Chicken Soup) • Hungarian Goulyas Soup • Beef Barley' }
-    ];
+    // Load schedule from classes-schedule.js (loaded in HTML before this file)
+    // CLASSES_SCHEDULE is the SINGLE source of truth for all class data
+    
+    // Convert to customer format
+    let defaultClasses = CLASSES_SCHEDULE.map(cls => ({
+        id: cls.id,
+        date: cls.date,
+        class: cls.name,
+        seats: cls.maxSeats - cls.bookedSeats,
+        time: cls.time,
+        description: cls.description
+    }));
     
     // CRITICAL FIX: Sync seats with actual bookings from cottageBookings
     const existingBookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
@@ -1647,12 +1610,6 @@ function getClassesFromStorage() {
         const totalBookedSeats = classBookings.reduce((sum, booking) => sum + (booking.seats || 0), 0);
         customerClass.seats = Math.max(0, 8 - totalBookedSeats);
         
-        // EMERGENCY FIX: Force December 4th Holiday Appetizers to show 7 seats
-        if (customerClass.class === 'Holiday Appetizers' && (customerClass.date === '2025-12-04' || customerClass.date === '2024-12-04')) {
-            console.log('🚨 EMERGENCY OVERRIDE: Forcing December 4th Holiday Appetizers to 7 seats in getClassesFromStorage');
-            customerClass.seats = 7;
-        }
-        
         console.log(`🔄 Class "${customerClass.class}" on ${customerClass.date}: ${customerClass.seats} available seats (${totalBookedSeats} booked from ${classBookings.length} bookings)`);
     });
     
@@ -1662,25 +1619,6 @@ function getClassesFromStorage() {
 }
 
 function saveClassesToStorage(classes) {
-    // SAFETY NET: Ensure Dec 4 Holiday Appetizers always reflects 7 available seats
-    try {
-        const targetDateA = '2025-12-04';
-        const targetDateB = '2024-12-04';
-        const idx = classes.findIndex(c => c && c.class === 'Holiday Appetizers' && (c.date === targetDateA || c.date === targetDateB));
-        if (idx > -1) {
-            classes[idx].seats = 7;
-        }
-        // Also align admin storage bookedSeats >= 1 for the same class/date
-        const admin = JSON.parse(localStorage.getItem('cottageClassesAdmin') || '[]');
-        const aIdx = admin.findIndex(c => c && (c.name === 'Holiday Appetizers' || c.class === 'Holiday Appetizers') && (c.date === targetDateA || c.date === targetDateB));
-        if (aIdx > -1) {
-            admin[aIdx].bookedSeats = Math.max(1, parseInt(admin[aIdx].bookedSeats || 0));
-            localStorage.setItem('cottageClassesAdmin', JSON.stringify(admin));
-        }
-    } catch (e) {
-        console.warn('Dec 4 override guard failed silently', e);
-    }
-
     localStorage.setItem('cottageClasses', JSON.stringify(classes));
     
     // IMMEDIATE REFRESH: Always trigger calendar refresh to show updated seat counts
@@ -1838,45 +1776,12 @@ setInterval(() => {
 
 // Initialize calendar with new schedule on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // CRITICAL FIX: Force fresh seat availability calculation on every page load
-    console.log('🔄 PAGE LOAD: Recalculating all seat availability from current bookings...');
+    // Load classes from clean schedule
+    console.log('🔄 PAGE LOAD: Loading classes from clean schedule...');
     
-    // EMERGENCY FIX: Add a test booking for December 4th Holiday Appetizers to force seat count to 7
-    const existingBookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
-    const testBookingExists = existingBookings.find(booking => 
-        booking.className === 'Holiday Appetizers' && 
-        (booking.date === '2025-12-04' || booking.date === '2024-12-04')
-    );
-    
-    if (!testBookingExists) {
-        console.log('🚨 EMERGENCY FIX: Adding test booking for December 4th Holiday Appetizers');
-        const testBooking = {
-            id: Date.now(),
-            date: '2025-12-04',
-            customerName: 'Test User',
-            email: 'test@example.com',
-            phone: '555-0123',
-            className: 'Holiday Appetizers',
-            seats: 1,
-            dietary: '',
-            status: 'paid',
-            bookingTime: new Date().toISOString(),
-            payment: {
-                paypalOrderId: 'TEST_ORDER_123',
-                paymentStatus: 'completed',
-                paymentAmount: '85.00',
-                paymentDate: new Date().toISOString(),
-                payerId: 'TEST_PAYER',
-                payerEmail: 'test@example.com'
-            }
-        };
-        existingBookings.push(testBooking);
-        localStorage.setItem('cottageBookings', JSON.stringify(existingBookings));
-        console.log('✅ Test booking added - December 4th should now show 7 seats');
-    }
-    
-    // Clear cached class data to force fresh calculation
+    // Clear cached class data to force reload from clean schedule
     localStorage.removeItem('cottageClasses');
+    localStorage.removeItem('cottageClassesAdmin');
     
     // Force refresh with new schedule and updated seat counts
     setTimeout(() => {

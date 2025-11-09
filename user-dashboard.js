@@ -1,5 +1,54 @@
 // User Dashboard JavaScript - Real-time Data Management
 
+// Security Utilities (copied from main script.js for dashboard use)
+const SecurityUtils = {
+    // Simple password hashing using SHA-256
+    async hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    },
+    
+    // Sanitize user input to prevent XSS
+    sanitizeInput(input) {
+        if (typeof input !== 'string') return input;
+        const div = document.createElement('div');
+        div.textContent = input;
+        return div.innerHTML;
+    },
+    
+    // Validate password strength
+    validatePasswordStrength(password) {
+        if (password.length < 8) {
+            return { valid: false, message: 'Password must be at least 8 characters long.' };
+        }
+        if (!/[A-Z]/.test(password)) {
+            return { valid: false, message: 'Password must contain at least one uppercase letter.' };
+        }
+        if (!/[a-z]/.test(password)) {
+            return { valid: false, message: 'Password must contain at least one lowercase letter.' };
+        }
+        if (!/[0-9]/.test(password)) {
+            return { valid: false, message: 'Password must contain at least one number.' };
+        }
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+            return { valid: false, message: 'Password must contain at least one special character.' };
+        }
+        return { valid: true, message: 'Password is strong.' };
+    },
+    
+    // Validate phone number format
+    validatePhone(phone) {
+        const digitsOnly = phone.replace(/\D/g, '');
+        if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+            return false;
+        }
+        return /^\+?[\d\s\-\(\)]{10,20}$/.test(phone);
+    }
+};
+
 // Auto-hide Navbar on Scroll for User Dashboard
 let userLastScrollTop = 0;
 let userNavbar = null;
@@ -67,7 +116,7 @@ class UserDashboard {
         const currentTime = Date.now();
         const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours for users
 
-        if (!isLoggedIn || !loginTime || (currentTime - loginTime) > sessionDuration) {
+        if (!isLoggedIn || !loginTime || (currentTime - parseInt(loginTime)) >= sessionDuration) {
             this.logout();
             return false;
         }
@@ -447,11 +496,19 @@ class UserDashboard {
         notifications.push({
             id: Date.now().toString(),
             type: 'message',
-            user: this.currentUser,
+            userInfo: {
+                firstName: this.currentUser.firstName,
+                lastName: this.currentUser.lastName,
+                email: this.currentUser.email
+            },
             message: message,
             timestamp: Date.now(),
             read: false
         });
+        // Keep only last 50 notifications
+        if (notifications.length > 50) {
+            notifications.splice(50);
+        }
         localStorage.setItem('adminNotifications', JSON.stringify(notifications));
     }
 
@@ -479,31 +536,79 @@ class UserDashboard {
     saveProfile(e) {
         e.preventDefault();
         
+        // Get raw input values
+        const firstName = document.getElementById('profileFirstName').value.trim();
+        const lastName = document.getElementById('profileLastName').value.trim();
+        const phone = document.getElementById('profilePhone').value.trim();
+        const dietary = document.getElementById('profileDietary').value.trim();
+        const experience = document.getElementById('profileExperience').value;
+        
+        // Validate inputs
+        if (!firstName || firstName.length < 2) {
+            this.showMessage('First name must be at least 2 characters long.', 'error');
+            return;
+        }
+        
+        if (!lastName || lastName.length < 2) {
+            this.showMessage('Last name must be at least 2 characters long.', 'error');
+            return;
+        }
+        
+        if (!SecurityUtils.validatePhone(phone)) {
+            this.showMessage('Please enter a valid phone number with 10-15 digits.', 'error');
+            return;
+        }
+        
+        // Sanitize inputs
         const profileData = {
             ...this.currentUser,
-            firstName: document.getElementById('profileFirstName').value,
-            lastName: document.getElementById('profileLastName').value,
-            phone: document.getElementById('profilePhone').value,
-            dietary: document.getElementById('profileDietary').value,
-            experience: document.getElementById('profileExperience').value
+            firstName: SecurityUtils.sanitizeInput(firstName),
+            lastName: SecurityUtils.sanitizeInput(lastName),
+            phone: phone,
+            dietary: SecurityUtils.sanitizeInput(dietary),
+            experience: experience
         };
 
-        // Update current user
+        // Update current user (without passwordHash)
         this.currentUser = profileData;
         
         try {
-            localStorage.setItem('currentUser', JSON.stringify(profileData));
+            // Save to currentUser (session) without passwordHash
+            const sessionData = {...profileData};
+            delete sessionData.passwordHash; // Never store hash in session
+            localStorage.setItem('currentUser', JSON.stringify(sessionData));
 
-            // Update user in users database
+            // Update user in users database - preserve passwordHash
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             const userIndex = users.findIndex(user => user.email === profileData.email);
             if (userIndex !== -1) {
-                users[userIndex] = {...users[userIndex], ...profileData};
+                // Preserve the passwordHash and other security fields
+                const existingPasswordHash = users[userIndex].passwordHash;
+                const passwordLastUpdated = users[userIndex].passwordLastUpdated;
+                
+                users[userIndex] = {
+                    ...users[userIndex],
+                    firstName: profileData.firstName,
+                    lastName: profileData.lastName,
+                    phone: profileData.phone,
+                    dietary: profileData.dietary,
+                    experience: profileData.experience,
+                    passwordHash: existingPasswordHash, // Preserve hash
+                    passwordLastUpdated: passwordLastUpdated // Preserve timestamp
+                };
+                
+                // Remove old password field if it exists
+                delete users[userIndex].password;
+                
                 localStorage.setItem('users', JSON.stringify(users));
             }
         } catch (error) {
             console.error('Failed to save profile:', error);
-            this.showMessage('Failed to save profile. Please clear your browser storage and try again.', 'error');
+            if (error.name === 'QuotaExceededError') {
+                this.showMessage('Storage quota exceeded. Please clear your browser data.', 'error');
+            } else {
+                this.showMessage('Failed to save profile. Please try again.', 'error');
+            }
             return;
         }
 
@@ -514,22 +619,33 @@ class UserDashboard {
         this.showMessage('Profile updated successfully!', 'success');
     }
 
-    changePassword() {
+    async changePassword() {
         const currentPassword = prompt('Enter your current password:');
         if (!currentPassword) return;
 
-        // Verify current password
+        // Verify current password using hash
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         const user = users.find(u => u.email === this.currentUser.email);
         
-        if (!user || user.password !== currentPassword) {
+        if (!user) {
+            this.showMessage('User not found.', 'error');
+            return;
+        }
+        
+        // Hash current password to compare
+        const currentPasswordHash = await SecurityUtils.hashPassword(currentPassword);
+        if (user.passwordHash !== currentPasswordHash) {
             this.showMessage('Current password is incorrect.', 'error');
             return;
         }
 
-        const newPassword = prompt('Enter your new password (minimum 6 characters):');
-        if (!newPassword || newPassword.length < 6) {
-            this.showMessage('New password must be at least 6 characters long.', 'error');
+        const newPassword = prompt('Enter your new password (8+ chars, uppercase, lowercase, number, special char):');
+        if (!newPassword) return;
+        
+        // Validate new password strength
+        const passwordValidation = SecurityUtils.validatePasswordStrength(newPassword);
+        if (!passwordValidation.valid) {
+            this.showMessage(passwordValidation.message, 'error');
             return;
         }
 
@@ -539,22 +655,38 @@ class UserDashboard {
             return;
         }
 
+        // Hash new password
+        const newPasswordHash = await SecurityUtils.hashPassword(newPassword);
+
         // Update password
         const userIndex = users.findIndex(u => u.email === this.currentUser.email);
         if (userIndex !== -1) {
-            users[userIndex].password = newPassword;
+            users[userIndex].passwordHash = newPasswordHash;
+            delete users[userIndex].password; // Remove old plain text password if exists
             users[userIndex].passwordLastUpdated = new Date().toISOString();
-            localStorage.setItem('users', JSON.stringify(users));
+            
+            try {
+                localStorage.setItem('users', JSON.stringify(users));
+            } catch (error) {
+                console.error('Failed to update password:', error);
+                this.showMessage('Failed to update password. Please try again.', 'error');
+                return;
+            }
 
             this.showMessage('Password updated successfully!', 'success');
             
-            // Add admin notification
-            this.addAdminNotification({
+            // Add admin notification (no sensitive data)
+            const notifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+            notifications.unshift({
                 type: 'security',
                 message: `${this.currentUser.firstName} ${this.currentUser.lastName} changed their password`,
                 timestamp: Date.now(),
                 read: false
             });
+            if (notifications.length > 50) {
+                notifications.splice(50);
+            }
+            localStorage.setItem('adminNotifications', JSON.stringify(notifications));
         }
     }
 

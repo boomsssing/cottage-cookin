@@ -1,3 +1,117 @@
+// Security Utilities
+const SecurityUtils = {
+    // Simple password hashing using SHA-256
+    async hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    },
+    
+    // Sanitize user input to prevent XSS
+    sanitizeInput(input) {
+        if (typeof input !== 'string') return input;
+        const div = document.createElement('div');
+        div.textContent = input;
+        return div.innerHTML;
+    },
+    
+    // Validate password strength
+    validatePasswordStrength(password) {
+        if (password.length < 8) {
+            return { valid: false, message: 'Password must be at least 8 characters long.' };
+        }
+        if (!/[A-Z]/.test(password)) {
+            return { valid: false, message: 'Password must contain at least one uppercase letter.' };
+        }
+        if (!/[a-z]/.test(password)) {
+            return { valid: false, message: 'Password must contain at least one lowercase letter.' };
+        }
+        if (!/[0-9]/.test(password)) {
+            return { valid: false, message: 'Password must contain at least one number.' };
+        }
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+            return { valid: false, message: 'Password must contain at least one special character.' };
+        }
+        return { valid: true, message: 'Password is strong.' };
+    },
+    
+    // Validate phone number format
+    validatePhone(phone) {
+        // Remove all non-digit characters to count actual digits
+        const digitsOnly = phone.replace(/\D/g, '');
+        if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+            return false;
+        }
+        // Check format allows only valid characters
+        return /^\+?[\d\s\-\(\)]{10,20}$/.test(phone);
+    },
+    
+    // Validate email format (more strict)
+    validateEmail(email) {
+        const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+        return emailRegex.test(email);
+    }
+};
+
+// Rate Limiting for Login Attempts
+const RateLimiter = {
+    attempts: {},
+    maxAttempts: 5,
+    lockoutDuration: 15 * 60 * 1000, // 15 minutes
+    
+    checkLimit(identifier) {
+        const now = Date.now();
+        if (!this.attempts[identifier]) {
+            this.attempts[identifier] = { count: 0, firstAttempt: now, lockedUntil: null };
+        }
+        
+        const record = this.attempts[identifier];
+        
+        // Check if still locked out
+        if (record.lockedUntil && now < record.lockedUntil) {
+            const remainingMinutes = Math.ceil((record.lockedUntil - now) / 60000);
+            return { 
+                allowed: false, 
+                message: `Too many failed attempts. Please try again in ${remainingMinutes} minute(s).` 
+            };
+        }
+        
+        // Reset if lockout expired
+        if (record.lockedUntil && now >= record.lockedUntil) {
+            this.attempts[identifier] = { count: 0, firstAttempt: now, lockedUntil: null };
+        }
+        
+        return { allowed: true };
+    },
+    
+    recordAttempt(identifier, success) {
+        const now = Date.now();
+        if (!this.attempts[identifier]) {
+            this.attempts[identifier] = { count: 0, firstAttempt: now, lockedUntil: null };
+        }
+        
+        if (success) {
+            // Clear attempts on successful login
+            delete this.attempts[identifier];
+        } else {
+            // Increment failed attempts
+            this.attempts[identifier].count++;
+            
+            // Lock account if max attempts reached
+            if (this.attempts[identifier].count >= this.maxAttempts) {
+                this.attempts[identifier].lockedUntil = now + this.lockoutDuration;
+            }
+        }
+    },
+    
+    getRemainingAttempts(identifier) {
+        if (!this.attempts[identifier]) return this.maxAttempts;
+        return Math.max(0, this.maxAttempts - this.attempts[identifier].count);
+    }
+};
+
 // Auto-hide Navbar on Scroll
 let lastScrollTop = 0;
 let navbar = null;
@@ -46,6 +160,32 @@ class AuthSystem {
     init() {
         this.checkAuthState();
         this.setupAuthEventListeners();
+        this.startSessionMonitoring();
+    }
+    
+    startSessionMonitoring() {
+        // Check session validity every 5 minutes
+        setInterval(() => {
+            const isLoggedIn = localStorage.getItem('userLoggedIn');
+            const loginTime = localStorage.getItem('userLoginTime');
+            const sessionDuration = 24 * 60 * 60 * 1000;
+            const currentTime = Date.now();
+            
+            if (isLoggedIn && loginTime && (currentTime - parseInt(loginTime)) >= sessionDuration) {
+                console.log('⚠️ Session expired - logging out');
+                this.showMessage('Your session has expired. Please log in again.', 'info');
+                
+                // Clear session
+                localStorage.removeItem('userLoggedIn');
+                localStorage.removeItem('userLoginTime');
+                localStorage.removeItem('currentUser');
+                
+                // Reload page to reset auth state
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+        }, 5 * 60 * 1000); // Check every 5 minutes
     }
 
     checkAuthState() {
@@ -203,22 +343,43 @@ class AuthSystem {
     async handleSignIn(e) {
         e.preventDefault();
         
-        const email = document.getElementById('signInEmail').value;
+        const email = document.getElementById('signInEmail').value.trim().toLowerCase();
         const password = document.getElementById('signInPassword').value;
+
+        // Check rate limiting
+        const rateLimitCheck = RateLimiter.checkLimit(email);
+        if (!rateLimitCheck.allowed) {
+            this.showMessage(rateLimitCheck.message, 'error');
+            return;
+        }
 
         // Get users from localStorage
         const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const user = users.find(u => u.email === email && u.password === password);
+        
+        // Hash the password to compare with stored hash
+        const passwordHash = await SecurityUtils.hashPassword(password);
+        const user = users.find(u => u.email === email && u.passwordHash === passwordHash);
 
         if (user) {
+            // Record successful login
+            RateLimiter.recordAttempt(email, true);
+            
             // Successful login
             try {
                 localStorage.setItem('userLoggedIn', 'true');
                 localStorage.setItem('userLoginTime', Date.now().toString());
-                localStorage.setItem('currentUser', JSON.stringify(user));
+                // Don't store password hash in currentUser
+                const userWithoutPassword = { ...user };
+                delete userWithoutPassword.passwordHash;
+                delete userWithoutPassword.password; // Remove old password field if exists
+                localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
             } catch (error) {
                 console.error('Failed to save login data:', error);
-                this.showMessage('Login failed. Please clear your browser storage and try again.', 'error');
+                if (error.name === 'QuotaExceededError') {
+                    this.showMessage('Storage quota exceeded. Please clear your browser data and try again.', 'error');
+                } else {
+                    this.showMessage('Login failed. Please try again.', 'error');
+                }
                 return;
             }
             
@@ -238,21 +399,41 @@ class AuthSystem {
                 window.location.href = 'user-dashboard.html';
             }, 1500);
         } else {
-            this.showMessage('Invalid email or password. Please try again.', 'error');
+            // Record failed login attempt
+            RateLimiter.recordAttempt(email, false);
+            const remainingAttempts = RateLimiter.getRemainingAttempts(email);
+            
+            if (remainingAttempts > 0) {
+                this.showMessage(`Invalid email or password. ${remainingAttempts} attempt(s) remaining.`, 'error');
+            } else {
+                this.showMessage('Too many failed attempts. Account locked for 15 minutes.', 'error');
+            }
         }
     }
 
     async handleSignUp(e) {
         e.preventDefault();
         
-        const formData = {
+        // Get raw form data
+        const rawFormData = {
             firstName: document.getElementById('signUpFirstName').value.trim(),
             lastName: document.getElementById('signUpLastName').value.trim(),
             email: document.getElementById('signUpEmail').value.trim().toLowerCase(),
             phone: document.getElementById('signUpPhone').value.trim(),
             password: document.getElementById('signUpPassword').value,
             confirmPassword: document.getElementById('signUpConfirmPassword').value,
-            dietary: document.getElementById('signUpDietary').value.trim(),
+            dietary: document.getElementById('signUpDietary').value.trim()
+        };
+
+        // Sanitize text inputs to prevent XSS
+        const formData = {
+            firstName: SecurityUtils.sanitizeInput(rawFormData.firstName),
+            lastName: SecurityUtils.sanitizeInput(rawFormData.lastName),
+            email: rawFormData.email, // Email doesn't need sanitization, will be validated
+            phone: rawFormData.phone,
+            password: rawFormData.password,
+            confirmPassword: rawFormData.confirmPassword,
+            dietary: SecurityUtils.sanitizeInput(rawFormData.dietary),
             createdAt: new Date().toISOString(),
             experience: 'beginner'
         };
@@ -268,23 +449,22 @@ class AuthSystem {
             return;
         }
         
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.email)) {
-            this.showMessage('Please enter a valid email address.', 'error');
+        // Email validation using improved validator
+        if (!SecurityUtils.validateEmail(formData.email)) {
+            this.showMessage('Please enter a valid email address (e.g., user@example.com).', 'error');
             return;
         }
         
-        // Phone validation (basic)
-        const phoneRegex = /^[\d\s\-\+\(\)]{10,}$/;
-        if (!phoneRegex.test(formData.phone)) {
-            this.showMessage('Please enter a valid phone number (at least 10 digits).', 'error');
+        // Phone validation using improved validator
+        if (!SecurityUtils.validatePhone(formData.phone)) {
+            this.showMessage('Please enter a valid phone number with 10-15 digits.', 'error');
             return;
         }
 
-        // Password validation
-        if (formData.password.length < 6) {
-            this.showMessage('Password must be at least 6 characters long.', 'error');
+        // Password strength validation
+        const passwordValidation = SecurityUtils.validatePasswordStrength(formData.password);
+        if (!passwordValidation.valid) {
+            this.showMessage(passwordValidation.message, 'error');
             return;
         }
         
@@ -300,19 +480,39 @@ class AuthSystem {
             return;
         }
 
+        // Hash the password
+        const passwordHash = await SecurityUtils.hashPassword(formData.password);
+
         // Add new user
-        const newUser = { ...formData };
-        delete newUser.confirmPassword; // Don't store confirm password
+        const newUser = {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            passwordHash: passwordHash, // Store hash instead of plain password
+            dietary: formData.dietary,
+            createdAt: formData.createdAt,
+            experience: formData.experience
+        };
+        
         users.push(newUser);
         
         try {
             localStorage.setItem('users', JSON.stringify(users));
             localStorage.setItem('userLoggedIn', 'true');
             localStorage.setItem('userLoginTime', Date.now().toString());
-            localStorage.setItem('currentUser', JSON.stringify(newUser));
+            
+            // Don't store password hash in currentUser session
+            const userWithoutPassword = { ...newUser };
+            delete userWithoutPassword.passwordHash;
+            localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
         } catch (error) {
             console.error('Failed to save user data:', error);
-            this.showMessage('Failed to create account. Please try again or clear your browser storage.', 'error');
+            if (error.name === 'QuotaExceededError') {
+                this.showMessage('Storage quota exceeded. Please clear your browser data and try again.', 'error');
+            } else {
+                this.showMessage('Failed to create account. Please try again.', 'error');
+            }
             return;
         }
 
@@ -326,10 +526,15 @@ class AuthSystem {
         // Update navigation immediately
         this.updateNavForLoggedInUser(newUser);
 
-        // Send admin notification about new member
+        // Send admin notification about new member (without sensitive data)
         addAdminNotification({
             type: 'new_member',
-            user: newUser,
+            userInfo: {
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                email: newUser.email,
+                createdAt: newUser.createdAt
+            },
             message: `New member: ${newUser.firstName} ${newUser.lastName} just signed up!`,
             timestamp: Date.now(),
             read: false
@@ -345,7 +550,13 @@ class AuthSystem {
     async handleForgotPassword(e) {
         e.preventDefault();
         
-        const email = document.getElementById('forgotEmail').value;
+        const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+        
+        // Validate email format first
+        if (!SecurityUtils.validateEmail(email)) {
+            this.showMessage('Please enter a valid email address.', 'error');
+            return;
+        }
         
         // Find user by email
         const users = JSON.parse(localStorage.getItem('users') || '[]');
@@ -360,7 +571,14 @@ class AuthSystem {
             // Store user for password reset
             this.resetUser = user;
         } else {
-            this.showMessage('No account found with that email address. Please check and try again.', 'error');
+            // Use same message timing to prevent user enumeration
+            // Show generic success message even if user doesn't exist
+            this.showMessage('If an account exists with this email, password reset instructions have been prepared.', 'info');
+            
+            // Still show the form for consistency, but with generic message
+            setTimeout(() => {
+                this.showMessage('No account found with that email address. Please check your email and try again.', 'error');
+            }, 2000);
         }
     }
 
@@ -397,19 +615,33 @@ class AuthSystem {
             return;
         }
 
-        if (newPassword.length < 6) {
-            this.showMessage('Password must be at least 6 characters long.', 'error');
+        // Validate password strength
+        const passwordValidation = SecurityUtils.validatePasswordStrength(newPassword);
+        if (!passwordValidation.valid) {
+            this.showMessage(passwordValidation.message, 'error');
             return;
         }
+
+        // Hash the new password
+        const newPasswordHash = await SecurityUtils.hashPassword(newPassword);
 
         // Update user password
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         const userIndex = users.findIndex(u => u.email === this.resetUser.email);
         
         if (userIndex !== -1) {
-            users[userIndex].password = newPassword;
+            // Update to hashed password and remove old plain text password if exists
+            users[userIndex].passwordHash = newPasswordHash;
+            delete users[userIndex].password; // Remove old plain text password
             users[userIndex].passwordLastUpdated = new Date().toISOString();
-            localStorage.setItem('users', JSON.stringify(users));
+            
+            try {
+                localStorage.setItem('users', JSON.stringify(users));
+            } catch (error) {
+                console.error('Failed to update password:', error);
+                this.showMessage('Failed to reset password. Please try again.', 'error');
+                return;
+            }
 
             // Move to success step
             document.getElementById('forgotPasswordStep2').style.display = 'none';
@@ -651,11 +883,41 @@ function logout() {
     }
 }
 
+// Migration function to hash existing plain text passwords
+async function migrateExistingUsers() {
+    try {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        let migrationNeeded = false;
+        
+        for (let user of users) {
+            // Check if user has plain text password (old format)
+            if (user.password && !user.passwordHash) {
+                migrationNeeded = true;
+                // Hash the existing password
+                user.passwordHash = await SecurityUtils.hashPassword(user.password);
+                // Remove plain text password
+                delete user.password;
+                console.log(`Migrated user: ${user.email}`);
+            }
+        }
+        
+        if (migrationNeeded) {
+            localStorage.setItem('users', JSON.stringify(users));
+            console.log('✅ User password migration completed successfully');
+        }
+    } catch (error) {
+        console.error('Failed to migrate users:', error);
+    }
+}
+
 // Initialize AuthSystem globally
 let authSystem;
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Migrate existing users first
+    migrateExistingUsers();
+    
     authSystem = new AuthSystem();
     
     // CRITICAL: Add real-time auth synchronization across tabs

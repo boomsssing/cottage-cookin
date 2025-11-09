@@ -666,11 +666,17 @@
             <form id="signInForm">
                 <div class="auth-form-group">
                     <label for="signInEmail">Email:</label>
-                    <input type="email" id="signInEmail" required>
+                    <input type="email" id="signInEmail" required 
+                           pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
+                           aria-label="Email address"
+                           placeholder="user@example.com"
+                           title="Please enter a valid email address">
                 </div>
                 <div class="auth-form-group">
                     <label for="signInPassword">Password:</label>
-                    <input type="password" id="signInPassword" required>
+                    <input type="password" id="signInPassword" required
+                           aria-label="Password"
+                           placeholder="Enter your password">
                 </div>
                 <button type="submit" class="auth-button">Sign In</button>
                 <div class="auth-forgot">
@@ -695,28 +701,46 @@
                 <div class="auth-form-row">
                     <div class="auth-form-group">
                         <label for="signUpFirstName">First Name:</label>
-                        <input type="text" id="signUpFirstName" required>
+                        <input type="text" id="signUpFirstName" required minlength="2"
+                               aria-label="First name"
+                               placeholder="John">
                     </div>
                     <div class="auth-form-group">
                         <label for="signUpLastName">Last Name:</label>
-                        <input type="text" id="signUpLastName" required>
+                        <input type="text" id="signUpLastName" required minlength="2"
+                               aria-label="Last name"
+                               placeholder="Doe">
                     </div>
                 </div>
                 <div class="auth-form-group">
                     <label for="signUpEmail">Email:</label>
-                    <input type="email" id="signUpEmail" required>
+                    <input type="email" id="signUpEmail" required
+                           pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
+                           aria-label="Email address"
+                           placeholder="user@example.com"
+                           title="Must be a valid email with @ and domain (e.g., user@example.com)">
                 </div>
                 <div class="auth-form-group">
                     <label for="signUpPhone">Phone Number:</label>
-                    <input type="tel" id="signUpPhone" required>
+                    <input type="tel" id="signUpPhone" required
+                           pattern="[\d\s\-\+\(\)]{10,20}"
+                           aria-label="Phone number"
+                           placeholder="(555) 123-4567"
+                           title="Enter 10-15 digits (dashes and spaces allowed)">
                 </div>
                 <div class="auth-form-group">
                     <label for="signUpPassword">Password:</label>
-                    <input type="password" id="signUpPassword" required minlength="6">
+                    <input type="password" id="signUpPassword" required minlength="8"
+                           aria-label="Password"
+                           placeholder="Create strong password"
+                           title="Must be 8+ characters with uppercase, lowercase, number, and special character">
+                    <small style="color: #666; font-size: 0.85em; margin-top: 4px; display: block;">Must include: 8+ chars, uppercase, lowercase, number, special character</small>
                 </div>
                 <div class="auth-form-group">
                     <label for="signUpConfirmPassword">Confirm Password:</label>
-                    <input type="password" id="signUpConfirmPassword" required minlength="6">
+                    <input type="password" id="signUpConfirmPassword" required minlength="8"
+                           aria-label="Confirm password"
+                           placeholder="Re-enter password">
                 </div>
                 <div class="auth-form-group">
                     <label for="signUpDietary">Dietary Restrictions (optional):</label>
@@ -740,7 +764,11 @@
                 <form id="forgotPasswordForm">
                     <div class="auth-form-group">
                         <label for="forgotEmail">Email Address:</label>
-                        <input type="email" id="forgotEmail" required placeholder="Enter your email">
+                        <input type="email" id="forgotEmail" required 
+                               pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
+                               aria-label="Email address for password reset"
+                               placeholder="Enter your email"
+                               title="Enter the email address associated with your account">
                     </div>
                     <button type="submit" class="auth-button">Find My Account</button>
                 </form>
@@ -768,11 +796,17 @@
                 <form id="resetPasswordForm">
                     <div class="auth-form-group">
                         <label for="newPassword">New Password:</label>
-                        <input type="password" id="newPassword" required minlength="6" placeholder="Enter new password">
+                        <input type="password" id="newPassword" required minlength="8"
+                               aria-label="New password"
+                               placeholder="Enter new password"
+                               title="Must be 8+ characters with uppercase, lowercase, number, and special character">
+                        <small style="color: #666; font-size: 0.85em; margin-top: 4px; display: block;">Must include: 8+ chars, uppercase, lowercase, number, special character</small>
                     </div>
                     <div class="auth-form-group">
                         <label for="confirmNewPassword">Confirm New Password:</label>
-                        <input type="password" id="confirmNewPassword" required minlength="6" placeholder="Confirm new password">
+                        <input type="password" id="confirmNewPassword" required minlength="8"
+                               aria-label="Confirm new password"
+                               placeholder="Confirm new password">
                     </div>
                     <button type="submit" class="auth-button">Reset Password</button>
                 </form>

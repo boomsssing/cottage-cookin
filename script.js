@@ -852,8 +852,8 @@ function initializeCalendar(categoryFilter = 'all') {
     const currentBookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
     availableDates.forEach(classItem => {
         const matchingBookings = currentBookings.filter(booking => {
-            const bookingDate = new Date(booking.date).toISOString().split('T')[0];
-            const classDate = new Date(classItem.date).toISOString().split('T')[0];
+            const bookingDate = parseLocalDate(booking.date).toISOString().split('T')[0];
+            const classDate = parseLocalDate(classItem.date).toISOString().split('T')[0];
             const dateMatches = bookingDate === classDate;
             const classMatches = booking.className === classItem.class || 
                                 classItem.class.toLowerCase().includes(booking.className.toLowerCase()) ||
@@ -1569,7 +1569,7 @@ function getClassesFromStorage() {
     if (adminClasses.length > 0) {
         // Convert admin classes to customer format
         const customerClasses = adminClasses
-            .filter(cls => new Date(cls.date) >= new Date()) // Only future classes
+            .filter(cls => parseLocalDate(cls.date) >= new Date()) // Only future classes
             .map(cls => ({
                 id: cls.id,
                 date: cls.date,
@@ -1605,8 +1605,8 @@ function getClassesFromStorage() {
     // Calculate actual available seats for each class
     defaultClasses.forEach(customerClass => {
         const classBookings = existingBookings.filter(booking => {
-            const bookingDate = new Date(booking.date).toISOString().split('T')[0];
-            const classDate = new Date(customerClass.date).toISOString().split('T')[0];
+            const bookingDate = parseLocalDate(booking.date).toISOString().split('T')[0];
+            const classDate = parseLocalDate(customerClass.date).toISOString().split('T')[0];
             
             // Match by date and class name
             const dateMatches = bookingDate === classDate;
@@ -2001,8 +2001,8 @@ function handlePaymentSuccess(paymentData) {
     
     // Find matching class in customer storage
     const classToUpdate = classes.find(cls => {
-        const clsDate = new Date(cls.date).toISOString().split('T')[0];
-        const formDate = new Date(bookingData.classDate).toISOString().split('T')[0];
+        const clsDate = parseLocalDate(cls.date).toISOString().split('T')[0];
+        const formDate = parseLocalDate(bookingData.classDate).toISOString().split('T')[0];
         const dateMatches = clsDate === formDate;
         
         // More precise class matching
@@ -2017,8 +2017,8 @@ function handlePaymentSuccess(paymentData) {
     
     // Find matching class in admin storage (admin objects use `name`, not `class`)
     const adminClassToUpdate = adminClasses.find(cls => {
-        const clsDate = new Date(cls.date).toISOString().split('T')[0];
-        const formDate = new Date(bookingData.classDate).toISOString().split('T')[0];
+        const clsDate = parseLocalDate(cls.date).toISOString().split('T')[0];
+        const formDate = parseLocalDate(bookingData.classDate).toISOString().split('T')[0];
         const dateMatches = clsDate === formDate;
 
         // More precise class matching - use same logic as customer classes
@@ -2330,7 +2330,7 @@ function handleAdminAddClass(e) {
     }
     
     // Check if date is in the future
-    const selectedDate = new Date(formData.date);
+    const selectedDate = parseLocalDate(formData.date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
@@ -2502,7 +2502,7 @@ function cancelAdminBooking(bookingId) {
 
 // Utility functions
 function formatAdminDate(dateString) {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return parseLocalDate(dateString).toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',

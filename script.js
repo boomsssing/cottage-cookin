@@ -318,6 +318,21 @@ class AuthSystem {
         this.resetForgotPasswordSteps();
     }
 
+    closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            
+            // Clear the form if it's an auth modal
+            if (modalId === 'signInModal') {
+                document.getElementById('signInForm').reset();
+            } else if (modalId === 'signUpModal') {
+                document.getElementById('signUpForm').reset();
+            }
+        }
+    }
+
     closeAuthModal() {
         document.getElementById('signInModal').style.display = 'none';
         document.getElementById('signUpModal').style.display = 'none';
@@ -393,11 +408,10 @@ class AuthSystem {
             // Update navigation immediately
             this.updateNavForLoggedInUser(user);
             
-            this.showMessage('Welcome back! Redirecting to your dashboard...', 'success');
+            // Close the sign-in modal
+            this.closeModal('signInModal');
             
-            setTimeout(() => {
-                window.location.href = 'user-dashboard.html';
-            }, 1500);
+            this.showMessage(`Welcome back, ${user.firstName}! 🎉`, 'success');
         } else {
             // Record failed login attempt
             RateLimiter.recordAttempt(email, false);
@@ -540,11 +554,10 @@ class AuthSystem {
             read: false
         });
 
-        this.showMessage('Account created successfully! Redirecting to your dashboard...', 'success');
-        
-        setTimeout(() => {
-            window.location.href = 'user-dashboard.html';
-        }, 1500);
+        // Close the sign-up modal
+        this.closeModal('signUpModal');
+
+        this.showMessage(`Welcome to Cottage Cooking, ${newUser.firstName}! 🎉 Browse our classes below.`, 'success');
     }
 
     async handleForgotPassword(e) {
@@ -1603,56 +1616,30 @@ function showPaymentOptions(className, date, currentUser) {
             </div>
 
             <div style="margin-bottom: 25px;">
-                <p style="color: #666; margin-bottom: 20px;">Please complete your payment using one of the options below:</p>
+                <p style="color: #666; margin-bottom: 20px;">Please complete your payment using PayPal:</p>
 
-                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                    <a href="https://www.paypal.me/BrianAverna" target="_blank" onclick="trackPaymentAttempt('paypal', '${className}', '${date}', '${currentUser.email}')" style="
+                <div style="display: flex; justify-content: center;">
+                    <a href="https://www.paypal.me/BrianAverna/85" target="_blank" onclick="trackPaymentAttempt('paypal', '${className}', '${date}', '${currentUser.email}')" style="
                         background: #0070ba;
                         color: white;
                         text-decoration: none;
-                        padding: 15px 25px;
+                        padding: 18px 40px;
                         border-radius: 8px;
                         font-weight: 600;
+                        font-size: 1.1rem;
                         display: inline-block;
                         transition: all 0.3s ease;
-                    " onmouseover="this.style.background='#005ea6'" onmouseout="this.style.background='#0070ba'">
-                        💳 PayPal
+                        box-shadow: 0 2px 8px rgba(0,112,186,0.3);
+                    " onmouseover="this.style.background='#005ea6'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#0070ba'; this.style.transform='scale(1)'">
+                        💳 Pay with PayPal - $85
                     </a>
-
-                    <a href="https://venmo.com/u/Brian-Averna" target="_blank" onclick="trackPaymentAttempt('venmo', '${className}', '${date}', '${currentUser.email}')" style="
-                        background: #008cff;
-                        color: white;
-                        text-decoration: none;
-                        padding: 15px 25px;
-                        border-radius: 8px;
-                        font-weight: 600;
-                        display: inline-block;
-                        transition: all 0.3s ease;
-                    " onmouseover="this.style.background='#0077cc'" onmouseout="this.style.background='#008cff'">
-                        📱 Venmo
-                    </a>
-
-                    <button type="button" onclick="initiateApplePayFromModal('${className}', '${date}', '${currentUser.email}')" style="
-                        background: #000000;
-                        color: white;
-                        border: none;
-                        padding: 15px 25px;
-                        border-radius: 8px;
-                        font-weight: 600;
-                        display: inline-block;
-                        transition: all 0.3s ease;
-                        cursor: pointer;
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    " onmouseover="this.style.background='#333333'" onmouseout="this.style.background='#000000'">
-                        🍎 Apple Pay
-                    </button>
                 </div>
             </div>
 
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                 <p style="margin: 0; color: #666; font-size: 0.9rem;">
-                    <strong>Important:</strong> After payment, please email brianwaverna@gmail.com with your name, 
-                    the class name, and date to confirm your booking. Your booking will be tracked in your dashboard.
+                    <strong>Note:</strong> After completing payment through PayPal, your booking will be automatically tracked in your dashboard. 
+                    You'll receive a confirmation email at ${currentUser.email}.
                 </p>
             </div>
 
@@ -3596,11 +3583,11 @@ function trackPaymentAttempt(paymentMethod, className, date, userEmail) {
     
     // Add admin notification with payment method icon
     const adminNotifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
-    const paymentIcon = paymentMethod === 'paypal' ? '💳' : paymentMethod === 'venmo' ? '📱' : '💰';
+    const paymentIcon = '💳'; // PayPal payment icon
     const notification = {
         id: Date.now(),
         type: 'payment',
-        message: `${paymentIcon} ${paymentMethod.toUpperCase()}: ${completeBooking.name} booked ${className} - $${completeBooking.paymentAmount}`,
+        message: `${paymentIcon} PayPal: ${completeBooking.name} booked ${className} - $${completeBooking.paymentAmount}`,
         booking: completeBooking,
         timestamp: Date.now(),
         read: false
@@ -3915,520 +3902,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Export for global access
 window.heroShuffle = heroShuffle;
-
-// Apple Pay Integration for Brian Averna Cottage Cooking
-class ApplePayIntegration {
-    constructor() {
-        this.merchantId = 'merchant.com.cottagecooking.brian'; // This would be your actual merchant ID
-        this.currency = 'USD';
-        this.countryCode = 'US';
-        this.merchantName = 'Brian Averna Cottage Cooking';
-        this.merchantPhone = '(203) 545-9969';
-        this.init();
-    }
-
-    init() {
-        // Check if Apple Pay is available
-        if (window.ApplePaySession && ApplePaySession.canMakePayments()) {
-            this.setupApplePayButton();
-        } else {
-            this.showApplePayUnavailable();
-        }
-    }
-
-    setupApplePayButton() {
-        const applePayButton = document.getElementById('apple-pay-button');
-        const applePayUnavailable = document.getElementById('apple-pay-unavailable');
-        
-        if (applePayButton) {
-            applePayButton.classList.remove('apple-pay-hidden');
-            applePayButton.addEventListener('click', () => this.initiateApplePay());
-        }
-        
-        if (applePayUnavailable) {
-            applePayUnavailable.classList.add('apple-pay-hidden');
-        }
-    }
-
-    showApplePayUnavailable() {
-        const applePayButton = document.getElementById('apple-pay-button');
-        const applePayUnavailable = document.getElementById('apple-pay-unavailable');
-        
-        if (applePayButton) {
-            applePayButton.classList.add('apple-pay-hidden');
-        }
-        
-        if (applePayUnavailable) {
-            applePayUnavailable.classList.remove('apple-pay-hidden');
-        }
-    }
-
-    initiateApplePay() {
-        const bookingData = this.getCurrentBookingData();
-        if (!bookingData) {
-            this.showError('No booking data available');
-            return;
-        }
-
-        // Validate booking data
-        const validation = this.validateBooking(bookingData);
-        if (!validation.valid) {
-            this.showError(validation.error);
-            return;
-        }
-
-        // Create payment request
-        const paymentRequest = {
-            countryCode: this.countryCode,
-            currencyCode: this.currency,
-            merchantCapabilities: ['supports3DS'],
-            supportedNetworks: ['visa', 'masterCard', 'amex', 'discover'],
-            total: {
-                label: this.merchantName,
-                amount: bookingData.totalAmount.toFixed(2),
-                type: 'final'
-            },
-            lineItems: this.createLineItems(bookingData),
-            requiredBillingContactFields: ['postalAddress', 'name', 'phone', 'email'],
-            requiredShippingContactFields: [],
-            merchantIdentifier: this.merchantId
-        };
-
-        // Create Apple Pay session
-        const session = new ApplePaySession(3, paymentRequest);
-        
-        // Handle validation
-        session.onvalidatemerchant = (event) => {
-            this.validateMerchant(event.validationURL)
-                .then(merchantSession => {
-                    session.completeMerchantValidation(merchantSession);
-                })
-                .catch(error => {
-                    console.error('Merchant validation failed:', error);
-                    session.abort();
-                });
-        };
-
-        // Handle payment authorization
-        session.onpaymentauthorized = (event) => {
-            this.processPayment(event.payment, bookingData)
-                .then(result => {
-                    if (result.success) {
-                        session.completePayment(ApplePaySession.STATUS_SUCCESS);
-                        this.handlePaymentSuccess(bookingData, result.paymentData);
-                    } else {
-                        session.completePayment(ApplePaySession.STATUS_FAILURE);
-                        this.showError(result.error || 'Payment failed');
-                    }
-                })
-                .catch(error => {
-                    console.error('Payment processing failed:', error);
-                    session.completePayment(ApplePaySession.STATUS_FAILURE);
-                    this.showError('Payment processing failed');
-                });
-        };
-
-        // Handle session events
-        session.oncancel = () => {
-            console.log('Apple Pay session cancelled');
-            this.hidePaymentProcessing();
-        };
-
-        session.onerror = (event) => {
-            console.error('Apple Pay session error:', event);
-            this.showError('Apple Pay session error');
-        };
-
-        // Begin the session
-        session.begin();
-        this.showPaymentProcessing();
-    }
-
-    createLineItems(bookingData) {
-        const lineItems = [];
-        
-        if (bookingData.isCustomAmount) {
-            lineItems.push({
-                label: `${bookingData.className} - Custom Amount`,
-                amount: bookingData.totalAmount.toFixed(2),
-                type: 'final'
-            });
-        } else {
-            lineItems.push({
-                label: `${bookingData.className} - ${bookingData.seats} seat(s)`,
-                amount: bookingData.totalAmount.toFixed(2),
-                type: 'final'
-            });
-        }
-
-        return lineItems;
-    }
-
-    async validateMerchant(validationURL) {
-        // In a real implementation, this would make a request to your server
-        // to validate the merchant with Apple's servers
-        // For now, we'll simulate a successful validation
-        return {
-            merchantSessionIdentifier: 'merchant-session-' + Date.now(),
-            displayName: this.merchantName,
-            domainName: window.location.hostname,
-            merchantIdentifier: this.merchantId,
-            initiative: 'web',
-            initiativeContext: window.location.hostname
-        };
-    }
-
-    async processPayment(payment, bookingData) {
-        // In a real implementation, this would process the payment through your payment processor
-        // For now, we'll simulate a successful payment
-        try {
-            // Simulate payment processing delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Create payment data
-            const paymentData = {
-                applePayTransactionId: payment.token.paymentData.transactionIdentifier,
-                paymentStatus: 'completed',
-                paymentAmount: bookingData.totalAmount,
-                paymentDate: new Date().toISOString(),
-                paymentMethod: 'Apple Pay',
-                billingContact: payment.billingContact,
-                shippingContact: payment.shippingContact
-            };
-
-            return {
-                success: true,
-                paymentData: paymentData
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error: error.message
-            };
-        }
-    }
-
-    handlePaymentSuccess(bookingData, paymentData) {
-        // Update booking with payment information
-        const paymentInfo = {
-            applePayTransactionId: paymentData.applePayTransactionId,
-            paymentStatus: 'completed',
-            paymentAmount: paymentData.paymentAmount,
-            paymentDate: paymentData.paymentDate,
-            paymentMethod: 'Apple Pay',
-            billingContact: paymentData.billingContact
-        };
-
-        // Call the main payment success handler
-        if (typeof handlePaymentSuccess === 'function') {
-            handlePaymentSuccess(paymentData);
-        }
-
-        // Update user dashboard
-        this.updateUserDashboard(bookingData, paymentInfo);
-
-        // Update admin dashboard
-        this.updateAdminDashboard(bookingData, paymentInfo);
-
-        // Send confirmation email
-        this.sendPaymentConfirmation(bookingData, paymentInfo);
-
-        // Redirect to success page
-        this.redirectToSuccess(paymentData);
-    }
-
-    updateUserDashboard(bookingData, paymentInfo) {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        if (currentUser.email) {
-            const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-            const userBooking = {
-                ...bookingData,
-                payment: paymentInfo,
-                status: 'paid',
-                bookingDate: new Date().toISOString()
-            };
-            userBookings.push(userBooking);
-            localStorage.setItem('userBookings', JSON.stringify(userBookings));
-        }
-    }
-
-    updateAdminDashboard(bookingData, paymentInfo) {
-        // Add payment notification to admin
-        const adminNotifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
-        const paymentNotification = {
-            id: Date.now(),
-            type: 'payment',
-            title: 'Apple Pay Payment Received',
-            message: `Apple Pay payment of $${paymentInfo.paymentAmount} received for ${bookingData.className}`,
-            booking: bookingData,
-            payment: paymentInfo,
-            timestamp: Date.now(),
-            read: false
-        };
-        adminNotifications.push(paymentNotification);
-        localStorage.setItem('adminNotifications', JSON.stringify(adminNotifications));
-    }
-
-    sendPaymentConfirmation(bookingData, paymentInfo) {
-        // In a real implementation, this would send an email
-        console.log('Apple Pay payment confirmation sent:', {
-            to: bookingData.email,
-            subject: 'Apple Pay Payment Confirmed - Cottage Cooking Class',
-            booking: bookingData,
-            payment: paymentInfo
-        });
-    }
-
-    redirectToSuccess(paymentData) {
-        // Store payment info in session for success page
-        sessionStorage.setItem('paymentSuccess', JSON.stringify(paymentData));
-        
-        // Redirect to success page
-        window.location.href = 'payment-success.html';
-    }
-
-    getCurrentBookingData() {
-        // Get booking data from session storage or form
-        const sessionBooking = sessionStorage.getItem('pendingBooking');
-        if (sessionBooking) {
-            return JSON.parse(sessionBooking);
-        }
-
-        // Fallback to form data
-        const form = document.getElementById('bookingForm');
-        if (form) {
-            const formData = new FormData(form);
-            const useCustomAmount = document.getElementById('useCustomAmount').checked;
-            let totalAmount;
-            
-            if (useCustomAmount) {
-                const customAmount = parseFloat(document.getElementById('customAmount').value) || 0;
-                totalAmount = customAmount;
-            } else {
-                totalAmount = 85 * parseInt(formData.get('seats'));
-            }
-            
-            return {
-                bookingId: Date.now(),
-                className: formData.get('className'),
-                classDate: formData.get('classDate'),
-                seats: parseInt(formData.get('seats')),
-                name: formData.get('name'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                dietary: formData.get('dietary'),
-                totalAmount: totalAmount,
-                isCustomAmount: useCustomAmount,
-                customAmount: useCustomAmount ? parseFloat(document.getElementById('customAmount').value) : null
-            };
-        }
-
-        return null;
-    }
-
-    validateBooking(bookingData) {
-        if (!bookingData.className || !bookingData.classDate || !bookingData.totalAmount) {
-            return { valid: false, error: 'Missing booking information' };
-        }
-
-        if (bookingData.totalAmount <= 0) {
-            return { valid: false, error: 'Invalid payment amount' };
-        }
-
-        if (bookingData.isCustomAmount && (!bookingData.customAmount || bookingData.customAmount < 1)) {
-            return { valid: false, error: 'Invalid custom amount' };
-        }
-
-        return { valid: true };
-    }
-
-    showPaymentProcessing() {
-        const processingDiv = document.getElementById('payment-processing');
-        if (processingDiv) {
-            processingDiv.classList.remove('payment-processing-hidden');
-        }
-    }
-
-    hidePaymentProcessing() {
-        const processingDiv = document.getElementById('payment-processing');
-        if (processingDiv) {
-            processingDiv.classList.add('payment-processing-hidden');
-        }
-    }
-
-    showError(message) {
-        console.error('Apple Pay error:', message);
-        this.hidePaymentProcessing();
-        
-        // Show error message to user
-        const errorMessage = document.getElementById('payment-error-message');
-        if (errorMessage) {
-            errorMessage.textContent = `Apple Pay Error: ${message}`;
-            errorMessage.classList.remove('payment-message-hidden');
-        }
-    }
-}
-
-// Initialize Apple Pay integration when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    window.applePayIntegration = new ApplePayIntegration();
-});
-
-// Function to initiate Apple Pay from the booking modal
-function initiateApplePayFromModal(className, date, userEmail) {
-    // Check if Apple Pay is available
-    if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
-        alert('Apple Pay is not available on this device. Please use PayPal or Venmo instead.');
-        return;
-    }
-
-    // Get current user data
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    
-    // Create booking data for Apple Pay
-    const bookingData = {
-        bookingId: Date.now(),
-        className: className,
-        classDate: date,
-        seats: 1, // Default to 1 seat for modal bookings
-        name: currentUser.firstName + ' ' + currentUser.lastName,
-        email: userEmail,
-        phone: currentUser.phone || '(203) 545-9969', // Default Apple Pay contact number
-        dietary: '',
-        totalAmount: 85, // Standard class price
-        isCustomAmount: false,
-        customAmount: null
-    };
-
-    // Store booking data for Apple Pay processing
-    sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
-
-    // Create payment request
-    const paymentRequest = {
-        countryCode: 'US',
-        currencyCode: 'USD',
-        merchantCapabilities: ['supports3DS'],
-        supportedNetworks: ['visa', 'masterCard', 'amex', 'discover'],
-        total: {
-            label: 'Brian Averna Cottage Cooking',
-            amount: '85.00',
-            type: 'final'
-        },
-        lineItems: [{
-            label: `${className} - 1 seat`,
-            amount: '85.00',
-            type: 'final'
-        }],
-        requiredBillingContactFields: ['postalAddress', 'name', 'phone', 'email'],
-        requiredShippingContactFields: [],
-        merchantIdentifier: 'merchant.com.cottagecooking.brian'
-    };
-
-    // Create Apple Pay session
-    const session = new ApplePaySession(3, paymentRequest);
-    
-    // Handle validation
-    session.onvalidatemerchant = (event) => {
-        // Simulate merchant validation
-        const merchantSession = {
-            merchantSessionIdentifier: 'merchant-session-' + Date.now(),
-            displayName: 'Brian Averna Cottage Cooking',
-            domainName: window.location.hostname,
-            merchantIdentifier: 'merchant.com.cottagecooking.brian',
-            initiative: 'web',
-            initiativeContext: window.location.hostname
-        };
-        session.completeMerchantValidation(merchantSession);
-    };
-
-    // Handle payment authorization
-    session.onpaymentauthorized = (event) => {
-        // Extract contact info from Apple Pay
-        const payment = event.payment;
-        const billingContact = payment.billingContact || {};
-        
-        // Update booking data with Apple Pay contact info
-        if (billingContact.phoneNumber) {
-            bookingData.phone = billingContact.phoneNumber;
-        }
-        if (billingContact.givenName && billingContact.familyName) {
-            bookingData.name = `${billingContact.givenName} ${billingContact.familyName}`;
-        }
-        
-        // Simulate payment processing
-        setTimeout(() => {
-            session.completePayment(ApplePaySession.STATUS_SUCCESS);
-            
-            // Create complete booking record
-            const completeBooking = {
-                id: bookingData.bookingId,
-                className: bookingData.className,
-                date: bookingData.classDate,
-                name: bookingData.name,
-                email: bookingData.email,
-                phone: bookingData.phone,
-                seats: bookingData.seats,
-                dietary: bookingData.dietary || 'None',
-                status: 'confirmed',
-                paymentMethod: 'Apple Pay',
-                paymentStatus: 'completed',
-                paymentAmount: bookingData.totalAmount,
-                transactionId: payment.token?.transactionIdentifier || `AP-${Date.now()}`,
-                bookingTime: new Date().toISOString(),
-                bookingDate: new Date().toISOString()
-            };
-            
-            // Save to bookings
-            const allBookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
-            allBookings.push(completeBooking);
-            localStorage.setItem('cottageBookings', JSON.stringify(allBookings));
-            
-            // Save to user bookings
-            const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-            userBookings.push(completeBooking);
-            localStorage.setItem('userBookings', JSON.stringify(userBookings));
-            
-            // Update class seats
-            updateClassSeatsAfterBooking(className, date, bookingData.seats);
-            
-            // Add admin notification
-            const adminNotifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
-            adminNotifications.push({
-                id: Date.now(),
-                type: 'payment',
-                message: `💰 Apple Pay: ${bookingData.name} booked ${className} - $${bookingData.totalAmount}`,
-                booking: completeBooking,
-                timestamp: Date.now(),
-                read: false
-            });
-            localStorage.setItem('adminNotifications', JSON.stringify(adminNotifications));
-            
-            // Show success message
-            alert(`✅ Apple Pay payment successful!\n\nBooking confirmed for ${className}\n${bookingData.seats} seat(s)\n\nConfirmation sent to: ${bookingData.email}`);
-            
-            // Close the modal
-            const modal = document.querySelector('.modal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-            
-            // Refresh calendar to show updated seats
-            if (typeof initializeCalendar === 'function') {
-                initializeCalendar();
-            }
-        }, 2000);
-    };
-
-    // Handle session events
-    session.oncancel = () => {
-        console.log('Apple Pay session cancelled');
-    };
-
-    session.onerror = (event) => {
-        console.error('Apple Pay session error:', event);
-        alert('Apple Pay payment failed. Please try PayPal or Venmo instead.');
-    };
-
-    // Begin the session
-    session.begin();
-}

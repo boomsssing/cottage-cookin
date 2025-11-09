@@ -136,7 +136,15 @@ class AdminNotificationSystem {
 
     renderNotification(notification) {
         const time = new Date(notification.timestamp).toLocaleTimeString();
-        const typeIcon = notification.type === 'booking' ? '📅' : notification.type === 'message' ? '💬' : '📢';
+        const typeIcons = {
+            'booking': '📅',
+            'message': '💬',
+            'new_member': '👤',
+            'payment': '💰',
+            'security': '🔒',
+            'cancellation': '❌'
+        };
+        const typeIcon = typeIcons[notification.type] || '📢';
         
         return `
             <div style="padding: 12px; border-bottom: 1px solid #eee; ${notification.read ? 'opacity: 0.6;' : ''}" 

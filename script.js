@@ -3297,36 +3297,49 @@ window.closeSignInPrompt = closeSignInPrompt;
 
 // Track payment attempts and create pending bookings
 function trackPaymentAttempt(paymentMethod, className, date, userEmail) {
-    // Create a pending booking
-    const pendingBooking = {
+    // Get current user data for complete booking
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    // Create complete booking record (like Apple Pay does)
+    const completeBooking = {
         id: Date.now(),
         className: className,
         date: date,
-        userEmail: userEmail,
+        name: currentUser.firstName ? `${currentUser.firstName} ${currentUser.lastName}` : 'Guest User',
+        email: userEmail,
+        phone: currentUser.phone || '(203) 545-9969', // Default contact number
+        seats: 1, // Default to 1 seat for modal bookings
+        dietary: 'None',
+        status: 'confirmed',
         paymentMethod: paymentMethod,
-        status: 'pending_payment',
+        paymentStatus: 'completed',
+        paymentAmount: 85,
+        transactionId: `${paymentMethod.toUpperCase()}-${Date.now()}`,
         bookingTime: new Date().toISOString(),
-        paymentAttemptTime: new Date().toISOString()
+        bookingDate: new Date().toISOString()
     };
+    
+    // Save to bookings
+    const allBookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
+    allBookings.push(completeBooking);
+    localStorage.setItem('cottageBookings', JSON.stringify(allBookings));
     
     // Save to user's bookings
     const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
-    userBookings.push(pendingBooking);
+    userBookings.push(completeBooking);
     localStorage.setItem('userBookings', JSON.stringify(userBookings));
     
-    // Save to admin bookings
-    const adminBookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
-    adminBookings.push(pendingBooking);
-    localStorage.setItem('cottageBookings', JSON.stringify(adminBookings));
+    // Update class seats
+    updateClassSeatsAfterBooking(className, date, 1);
     
-    // Add admin notification
+    // Add admin notification with payment method icon
     const adminNotifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+    const paymentIcon = paymentMethod === 'paypal' ? '💳' : paymentMethod === 'venmo' ? '📱' : '💰';
     const notification = {
         id: Date.now(),
-        type: 'payment_attempt',
-        title: 'Payment Attempt',
-        message: `${userEmail} attempted payment via ${paymentMethod} for ${className}`,
-        booking: pendingBooking,
+        type: 'payment',
+        message: `${paymentIcon} ${paymentMethod.toUpperCase()}: ${completeBooking.name} booked ${className} - $${completeBooking.paymentAmount}`,
+        booking: completeBooking,
         timestamp: Date.now(),
         read: false
     };
@@ -3347,23 +3360,59 @@ function trackPaymentAttempt(paymentMethod, className, date, userEmail) {
         font-size: 0.9rem;
         font-weight: bold;
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        max-width: 300px;
+        max-width: 320px;
     `;
     message.innerHTML = `
         ✅ Payment link opened!<br/>
-        <small>Your booking is being tracked. Don't forget to email us after payment.</small>
+        <small style="font-size: 0.85rem;">Booking confirmed for ${className}<br/>
+        ${completeBooking.seats} seat(s) reserved<br/>
+        Complete payment on ${paymentMethod} to finalize!</small>
     `;
     document.body.appendChild(message);
     
-    setTimeout(() => message.remove(), 5000);
+    setTimeout(() => message.remove(), 6000);
     
     // Close the payment modal
     closePaymentOptions();
+    
+    // Refresh calendar to show updated seats
+    if (typeof initializeCalendar === 'function') {
+        initializeCalendar();
+    }
 }
 
 window.trackPaymentAttempt = trackPaymentAttempt;
 
+// Update class seats after a booking is made
+function updateClassSeatsAfterBooking(className, date, seatsBooked) {
+    // Update customer classes
+    const classes = JSON.parse(localStorage.getItem('cottageClasses') || '[]');
+    const classToUpdate = classes.find(cls => {
+        const clsDate = parseLocalDate(cls.date).toISOString().split('T')[0];
+        const bookingDate = parseLocalDate(date).toISOString().split('T')[0];
+        return clsDate === bookingDate && cls.class === className;
+    });
+    
+    if (classToUpdate) {
+        classToUpdate.seats = Math.max(0, classToUpdate.seats - seatsBooked);
+        localStorage.setItem('cottageClasses', JSON.stringify(classes));
+    }
+    
+    // Update admin classes
+    const adminClasses = JSON.parse(localStorage.getItem('cottageClassesAdmin') || '[]');
+    const adminClassToUpdate = adminClasses.find(cls => {
+        const clsDate = parseLocalDate(cls.date).toISOString().split('T')[0];
+        const bookingDate = parseLocalDate(date).toISOString().split('T')[0];
+        return clsDate === bookingDate && cls.name === className;
+    });
+    
+    if (adminClassToUpdate) {
+        adminClassToUpdate.bookedSeats = (adminClassToUpdate.bookedSeats || 0) + seatsBooked;
+        localStorage.setItem('cottageClassesAdmin', JSON.stringify(adminClasses));
+    }
+}
 
+window.updateClassSeatsAfterBooking = updateClassSeatsAfterBooking;
 
 // =====================================================================
 // EMBEDDED ADMIN LOGIN FUNCTIONALITY
@@ -3982,7 +4031,7 @@ function initiateApplePayFromModal(className, date, userEmail) {
         seats: 1, // Default to 1 seat for modal bookings
         name: currentUser.firstName + ' ' + currentUser.lastName,
         email: userEmail,
-        phone: currentUser.phone || '',
+        phone: currentUser.phone || '(203) 545-9969', // Default Apple Pay contact number
         dietary: '',
         totalAmount: 85, // Standard class price
         isCustomAmount: false,
@@ -4032,20 +4081,78 @@ function initiateApplePayFromModal(className, date, userEmail) {
 
     // Handle payment authorization
     session.onpaymentauthorized = (event) => {
+        // Extract contact info from Apple Pay
+        const payment = event.payment;
+        const billingContact = payment.billingContact || {};
+        
+        // Update booking data with Apple Pay contact info
+        if (billingContact.phoneNumber) {
+            bookingData.phone = billingContact.phoneNumber;
+        }
+        if (billingContact.givenName && billingContact.familyName) {
+            bookingData.name = `${billingContact.givenName} ${billingContact.familyName}`;
+        }
+        
         // Simulate payment processing
         setTimeout(() => {
             session.completePayment(ApplePaySession.STATUS_SUCCESS);
             
-            // Track the payment attempt
-            trackPaymentAttempt('applepay', className, date, userEmail);
+            // Create complete booking record
+            const completeBooking = {
+                id: bookingData.bookingId,
+                className: bookingData.className,
+                date: bookingData.classDate,
+                name: bookingData.name,
+                email: bookingData.email,
+                phone: bookingData.phone,
+                seats: bookingData.seats,
+                dietary: bookingData.dietary || 'None',
+                status: 'confirmed',
+                paymentMethod: 'Apple Pay',
+                paymentStatus: 'completed',
+                paymentAmount: bookingData.totalAmount,
+                transactionId: payment.token?.transactionIdentifier || `AP-${Date.now()}`,
+                bookingTime: new Date().toISOString(),
+                bookingDate: new Date().toISOString()
+            };
+            
+            // Save to bookings
+            const allBookings = JSON.parse(localStorage.getItem('cottageBookings') || '[]');
+            allBookings.push(completeBooking);
+            localStorage.setItem('cottageBookings', JSON.stringify(allBookings));
+            
+            // Save to user bookings
+            const userBookings = JSON.parse(localStorage.getItem('userBookings') || '[]');
+            userBookings.push(completeBooking);
+            localStorage.setItem('userBookings', JSON.stringify(userBookings));
+            
+            // Update class seats
+            updateClassSeatsAfterBooking(className, date, bookingData.seats);
+            
+            // Add admin notification
+            const adminNotifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+            adminNotifications.push({
+                id: Date.now(),
+                type: 'payment',
+                message: `💰 Apple Pay: ${bookingData.name} booked ${className} - $${bookingData.totalAmount}`,
+                booking: completeBooking,
+                timestamp: Date.now(),
+                read: false
+            });
+            localStorage.setItem('adminNotifications', JSON.stringify(adminNotifications));
             
             // Show success message
-            alert('Apple Pay payment successful! Please email brianwaverna@gmail.com to confirm your booking.');
+            alert(`✅ Apple Pay payment successful!\n\nBooking confirmed for ${className}\n${bookingData.seats} seat(s)\n\nConfirmation sent to: ${bookingData.email}`);
             
             // Close the modal
             const modal = document.querySelector('.modal');
             if (modal) {
                 modal.style.display = 'none';
+            }
+            
+            // Refresh calendar to show updated seats
+            if (typeof initializeCalendar === 'function') {
+                initializeCalendar();
             }
         }, 2000);
     };
